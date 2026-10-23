@@ -48,8 +48,7 @@ __EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json" \
 ```
 
 Also exercised with GNOME Shell **50.4** / Mutter **50.5** using `nixpkgs` in
-place of the pinned ref (50 is an additional forward-compatibility probe, not
-listed in this extension's metadata).
+place of the pinned ref (both 49 and 50 are listed in the current metadata).
 
 The test imports the actual Open Bar `applyMenuStyles`/`applyBoxStyles` and
 `reloadStyle` implementations. It creates real PanelMenu, PopupMenu and St
@@ -117,7 +116,80 @@ configuration warnings. These are not suppressed or claimed absent. An early
 zero-width fixture produced Clutter allocation warnings; adding a real panel
 label and explicit slider width eliminated them in the final runs.
 
-Not verified: a real D-Bus AppIndicator service/transport, a running IBus engine,
-full extension enable/disable (which has unrelated DateMenu code paths), actual
-DateMenu/Quick Settings/QSAP third-party integrations, or GNOME 45–48. The actor
-and style matching integration is real, but it is not a full desktop smoke test.
+The ordinary-menu suite does not verify a real D-Bus AppIndicator
+service/transport, a running IBus engine, or third-party QSAP integration.
+Its actor/style assertions are not evidence of DateMenu or full lifecycle
+compatibility; the separate tests below exercise those paths.
+
+## Native DateMenu Clear control and full lifecycle regression
+
+The DateMenu control fix uses `CalendarMessageList._clearButton`, rather than
+an out-of-scope `clearBtn` variable or a version-dependent child index. DND
+continues to be styled only before GNOME 49, using `_dndButton`/`_dndSwitch`.
+These are private Shell fields, not a stable public API. Source inspection of
+[45.0](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/45.0/js/ui/calendar.js),
+[46.0](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/46.0/js/ui/calendar.js),
+[47.0](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/47.0/js/ui/calendar.js),
+[48.0](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/48.0/js/ui/calendar.js),
+[49.4](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/49.4/js/ui/calendar.js) and
+[50.4](https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/50.4/js/ui/calendar.js)
+confirms the named Clear field throughout and both DND fields before 49.
+GNOME 45–48 have **not** been runtime-tested here.
+
+```sh
+bash tests/run-date-menu-tests.sh date-menu
+bash tests/run-date-menu-tests.sh lifecycle
+```
+
+For Nix, use the same matching Shell/Mesa ref as above:
+
+```sh
+ref=github:NixOS/nixpkgs/b6018f87da91d19d0ab4cf979885689b469cdd41
+# Use ref=nixpkgs for the GNOME 50 run.
+mesa=$(nix eval --raw "$ref#mesa.outPath")
+__EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json" \
+  nix shell "$ref#gnome-shell" "$ref#dbus" "$ref#glib.dev" "$ref#mesa" \
+  -c bash -ec 'bash tests/run-date-menu-tests.sh date-menu; bash tests/run-date-menu-tests.sh lifecycle; bash tests/run-menu-tests.sh'
+```
+
+The runner copies the extension, metadata, assets and compiled schemas into
+scratch. HOME/XDG directories, session bus and memory settings are private;
+it neither enables the extension on the user's desktop nor changes their
+preferences. Logs and result files are preserved at the printed path. A zero
+Shell exit and assertion result are insufficient: logged JavaScript errors,
+unhandled rejections and extension stack traces also make the runner fail.
+Missing isolated-desktop services remain visible in the log.
+
+- `date-menu` calls the actual `applyMenuStyles()` against the native Shell
+  DateMenu, not a stand-in PopupMenu. Two add/remove cycles assert the actual
+  Clear actor's class both immediately and after the calendar callback runs.
+- `lifecycle` constructs the actual exported extension class with its real
+  metadata and directory, and runs **two complete `enable()`/`disable()` cycles**.
+  No lifecycle methods are replaced. All panel boxes, native DateMenu and Quick
+  Settings participate. It asserts panel/Clear classes and released references,
+  toggles the real `menustyle` setting off/on, waits 6.5 seconds after each enable
+  (including delayed refresh, background hookup and Fitts setup), and waits
+  another 6.5 seconds after each disable to expose asynchronous exceptions.
+- The isolated desktop is given a generated PNG wallpaper through its private
+  background settings. Empty Nix wallpaper defaults otherwise trigger the
+  unrelated `getPaletteFromImage(null)` error. Palette generation is exercised,
+  not stubbed out; Open Bar settings retain their defaults.
+
+Results for this fix:
+
+- Before the production edit, the native DateMenu test failed with
+  `ReferenceError: clearBtn is not defined` on **49.4 and 50.4**. The real
+  `enable()` path also reproduced that exception on **50.4**.
+- After the edit: **9 DateMenu assertions** and **24 lifecycle assertions**
+  passed independently on **49.4 and 50.4**. Both lifecycle cycles completed,
+  including the post-disable observation windows, with no JavaScript errors
+  or extension stack traces. Missing CalendarServer/GDM/audio/etc. warnings
+  remain; GNOME 49 also reports host Fontconfig warnings.
+- Ordinary-menu regression rerun: **1319 assertions** passed on each version.
+  Stylesheet scope comparison rerun: **553 assertions**, **60** scoped selectors.
+
+This is a real class lifecycle test inside a private compositor, not installation
+through Shell's extension manager or a live-user desktop smoke test. It does
+not validate immediate-disable races, all settings combinations, notification
+or media delivery/styling, monitor hotplug, QSAP or AppIndicator transport. The
+small control fix does not address those separate areas.
