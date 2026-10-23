@@ -2323,7 +2323,7 @@ function getStylesheet(obar, Me) {
             }
         `;
 
-        stylesheet += `
+        let popupMenuStyles = `
             ${openmenuClass}.popup-menu-item {
                 color: rgba(${mfgred},${mfggreen},${mfgblue},${mfgAlpha});
             }
@@ -2357,7 +2357,7 @@ function getStylesheet(obar, Me) {
 
         `;
             // rgba(${smbgred},${smbggreen},${smbgblue},${mbgAlpha})
-        stylesheet += `
+        popupMenuStyles += `
             ${openmenuClass}.popup-sub-menu {
                 background-color: ${smbg} !important;
                 border: none;
@@ -2449,6 +2449,21 @@ function getStylesheet(obar, Me) {
             }
 
         `;
+
+        // DBusMenu can add/replace rows after applyBoxStyles has run. Keep the
+        // per-actor selectors, but also scope these ordinary menu rules to the
+        // tagged content box. Expand all item/submenu/section rules together so
+        // their relative specificity (including submenu overrides) is retained.
+        // Do not expand root/container or special-menu rules, or global mode.
+        if(openmenuClass) {
+            popupMenuStyles = popupMenuStyles.replace(/([^{}]+)\{/g, (rule, selectors) => {
+                const descendants = selectors.split(',').map(selector => selector.trim())
+                    .filter(selector => selector.startsWith('.openmenu.popup-'))
+                    .map(selector => selector.replace('.openmenu', '.openmenu.popup-menu-content '));
+                return descendants.length ? `${selectors}, ${descendants.join(', ')} {` : rule;
+            });
+        }
+        stylesheet += popupMenuStyles;
 
         // rgba(${mhred},${mhgreen},${mhblue},${mhAlpha})
         stylesheet += `
