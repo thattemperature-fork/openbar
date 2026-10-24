@@ -448,10 +448,33 @@ export default class Openbar extends Extension {
     }
 
     // Go through each panel button's menu to add/remove openmenu class to its children
-    applyMenuStyles(panel, add) {
+    applyMenuStyles(panel, add, menuButton = null) {
+        // A button may survive off-panel across disable, so membership belongs
+        // to the active connection manager, not to the extension instance.
+        if(this._menuStyleConnections !== this._connections) {
+            this._menuStyleButtons = new WeakSet();
+            this._menuStyleConnections = this._connections;
+        }
+        this._menuStyleButtons ??= new WeakSet();
         for(const box of this.panelBoxes) {
             for(const btn of box) { // btn is a bin, parent of indicator button
+                if(menuButton && btn.child !== menuButton)
+                    continue;
                 if(btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) { // btn.child is the indicator
+                    // setMenu replaces the root without adding/removing a panel
+                    // button. Track only the native Button signal, not menu trees.
+                    if(btn.child instanceof PanelMenu.Button) {
+                        if(add && this._connections && !this._menuStyleButtons.has(btn.child)) {
+                            this._connections.connect(btn.child, 'menu-set', () => {
+                                this.applyMenuStyles(panel, true, btn.child);
+                            });
+                            this._menuStyleButtons.add(btn.child);
+                        }
+                        else if(!add) {
+                            this._connections?.disconnect(btn.child, 'menu-set');
+                            this._menuStyleButtons.delete(btn.child);
+                        }
+                    }
 
                     // box pointer case, to update -arrow-rise for bottom panel
                     if(btn.child.menu?._boxPointer) {

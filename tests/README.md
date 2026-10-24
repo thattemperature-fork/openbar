@@ -1,5 +1,22 @@
 # Dynamic panel menu regression tests
 
+## Modern DateMenu and whole-root follow-ups
+
+See [docs/fixes/menus.md](../docs/fixes/menus.md) for current commands, tagged
+source research, red/green evidence, limitations and exact isolated Nix runs.
+`menu-modern-run.sh` covers native notifications and actual notification/MPRIS
+D-Bus transport; `menu-modern-root-run.sh` covers whole-menu replacement on an
+existing native panel button with real enable/disable cycles. Current generator
+preservation is checked by `menu-modern-scope.js` against `1aa1eb3`.
+
+The original `stylesheet-scope.js` comparison below intentionally assumes the
+ordinary-menu-only patch adds no rules and leaves global output byte-identical.
+It describes the historical `53c97bf` change; modern group/icon selectors add
+rules in both scoped and global modes, so use the current scope test instead.
+The whole-root replacement limitation described below is superseded for native
+`PanelMenu.Button.setMenu()`; direct `.menu` assignments without `menu-set` and
+nonstandard third-party menu implementations remain outside verified coverage.
+
 ## Fix scope
 
 `applyBoxStyles()` tags the current content of a panel menu, but DBusMenu can
