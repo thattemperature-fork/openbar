@@ -96,6 +96,89 @@ if (test === 'gtk-completion') {
     await pending;
     await Styles.saveGtkCss(obar, 'disable');
     assert(published === 0, 'an active cancelled write must not publish');
+} else if (test === 'gtk-original-bytes') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    const dir = `${GLib.get_user_config_dir()}/gtk-3.0`;
+    GLib.mkdir_with_parents(dir, 0o700);
+    const original = new Uint8Array([47, 42, 32, 255, 254, 32, 42, 47, 10]);
+    GLib.file_set_contents(`${dir}/gtk.css`, original);
+    await Styles.saveGtkCss(obar, 'enable');
+    await Styles.saveGtkCss(obar, 'disable');
+    const restored = GLib.file_get_contents(`${dir}/gtk.css`)[1];
+    assert(original.length === restored.length && original.every((byte, index) => byte === restored[index]), 'original CSS backup must restore exact bytes, not lossy UTF8 decoding');
+} else if (test === 'gtk-restore') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    for (const version of [3, 4]) {
+        const dir = `${GLib.get_user_config_dir()}/gtk-${version}.0`;
+        GLib.mkdir_with_parents(dir, 0o700);
+        GLib.file_set_contents(`${dir}/gtk.css`, `original ${version}`);
+    }
+    await Styles.saveGtkCss(obar, 'enable');
+    await Styles.saveGtkCss(obar, 'enable');
+    Styles.invalidateStyleWrites(obar);
+    obar._settings = null;
+    await Styles.saveGtkCss(obar, 'disable');
+    for (const version of [3, 4]) {
+        const dir = `${GLib.get_user_config_dir()}/gtk-${version}.0`;
+        assert(read(`${dir}/gtk.css`) === `original ${version}`, 'restore must preserve exact original');
+        assert(!GLib.file_test(`${dir}/gtk_backup_byOpenBar.css`, GLib.FileTest.EXISTS), 'restore consumes only owned backup');
+    }
+} else if (test === 'gtk-edits') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    const dir = `${GLib.get_user_config_dir()}/gtk-3.0`;
+    GLib.mkdir_with_parents(dir, 0o700);
+    GLib.file_set_contents(`${dir}/gtk.css`, 'original user stylesheet');
+    await Styles.saveGtkCss(obar, 'enable');
+    const edited = `${read(`${dir}/gtk.css`)}\n/* independent user edit */`;
+    GLib.file_set_contents(`${dir}/gtk.css`, edited);
+    try { await Styles.saveGtkCss(obar, 'enable'); } catch (_) { /* refusal expected */ }
+    assert(read(`${dir}/gtk.css`) === edited, 'regeneration must not erase user edits including Open Bar header');
+    try { await Styles.saveGtkCss(obar, 'disable'); } catch (_) { /* refusal expected */ }
+    assert(read(`${dir}/gtk.css`) === edited, 'disable must not erase edited generated CSS');
+    assert(!GLib.file_test(`${GLib.get_user_config_dir()}/gtk-4.0/gtk.css`, GLib.FileTest.EXISTS), 'conflict in GTK3 must not prevent GTK4 cleanup');
+    assert(read(`${dir}/gtk_backup_byOpenBar.css`) === 'original user stylesheet', 'edited generated file does not destroy original backup');
+} else if (test === 'gtk-symlink') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    const dir = `${GLib.get_user_config_dir()}/gtk-3.0`;
+    GLib.mkdir_with_parents(dir, 0o700);
+    const target = `${root}/external.css`;
+    GLib.file_set_contents(target, 'symlink target');
+    Gio.File.new_for_path(`${dir}/gtk.css`).make_symbolic_link(target, null);
+    let failed = false;
+    try { await Styles.saveGtkCss(obar, 'enable'); } catch (_) { failed = true; }
+    assert(failed, 'GTK symlink must be refused');
+    assert(GLib.file_test(`${dir}/gtk.css`, GLib.FileTest.IS_SYMLINK), 'GTK symlink must remain a symlink');
+    assert(read(target) === 'symlink target', 'never modify GTK symlink target');
+} else if (test === 'gtk-backup-edit') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    const dir = `${GLib.get_user_config_dir()}/gtk-3.0`;
+    GLib.mkdir_with_parents(dir, 0o700);
+    GLib.file_set_contents(`${dir}/gtk.css`, 'original');
+    await Styles.saveGtkCss(obar, 'enable');
+    const generated = read(`${dir}/gtk.css`);
+    GLib.file_set_contents(`${dir}/gtk_backup_byOpenBar.css`, 'independent backup edit');
+    let failed = false;
+    try { await Styles.saveGtkCss(obar, 'disable'); } catch (_) { failed = true; }
+    assert(failed, 'changed backup must not be restored');
+    assert(read(`${dir}/gtk.css`) === generated, 'changed backup must leave generated file intact');
+    assert(read(`${dir}/gtk_backup_byOpenBar.css`) === 'independent backup edit', 'changed backup must survive');
+} else if (test === 'gtk-backup-failure') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-gtk', true);
+    const dir = `${GLib.get_user_config_dir()}/gtk-3.0`;
+    GLib.mkdir_with_parents(`${dir}/gtk_backup_byOpenBar.css`, 0o700);
+    GLib.file_set_contents(`${dir}/gtk_backup_byOpenBar.css/keep`, 'backup obstruction');
+    GLib.file_set_contents(`${dir}/gtk.css`, 'original user css');
+    let failed = false;
+    try { await Styles.saveGtkCss(obar, 'enable'); } catch (_) { failed = true; }
+    assert(failed, 'backup failure must reject before overwrite');
+    assert(read(`${dir}/gtk.css`) === 'original user css', 'backup failure must preserve original');
+    assert(read(`${dir}/gtk_backup_byOpenBar.css/keep`) === 'backup obstruction', 'existing backup must remain untouched');
 } else if (test === 'latest-generation') {
     const obar = fixture(test);
     let published = 0;

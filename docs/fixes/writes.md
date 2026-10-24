@@ -38,6 +38,17 @@ GREEN: all six scenarios PASS; files/settings isolated by runner beneath `$TMPDI
 
 Implementation serializes **all** generated file writes per instance (not only reloads), snapshots settings synchronously, always emits coherent SVG sets, and leaves dirty flags intact on obsolete/failure paths. Internal replace-contents-bytes completion includes stream close/rename; no separately forgotten stream close. Only latest successful generation toggles reload. Cancellation cannot undo an already committed rename, so cleanup waits in the same queue.
 
+### TODO 11
+RED real filesystem: `gtk-backup-failure` uses a nonempty directory at the backup path and proves baseline logged the backup error then overwrote gtk.css. Additional c331579-baseline runs in `$TMPDIR/openbar-gtk-red.PYlblG` fail for lost edited generated CSS, accepted real symlink, and restored externally changed backup. These scenarios are not simulated Gio successes.
+
+GREEN command: same GI_TYPELIB_PATH/Nix setup above, then:
+```sh
+nix shell nixpkgs#gjs nixpkgs#glib.dev -c bash tests/run-write-tests.sh gtk-backup-failure gtk-restore gtk-edits gtk-symlink gtk-backup-edit gtk-completion reload-completion reload-failure stale-disable active-disable latest-generation
+```
+All eleven PASS. Backup is an exclusive asynchronous copy (never move/overwrite), preserving the original until a successful replacement. The ledger holds exact content AND etag; the Open Bar header is not proof of ownership. Backup/file symlinks and nonregular paths are refused. Changed target or backup is preserved with a rejected promise and an actionable diagnostic. Original-less files use an exclusive create/await close before atomic replacement. GTK operations already in progress finish in queue before disable restore (not interrupted between backup and commit); generation invalidation still suppresses reload. A refusal in GTK3 does not prevent independent GTK4 cleanup.
+
+Limitations: ledger is per extension instance, not a persistent crash-recovery journal. Existing legacy backups are never adopted or overwritten automatically; user recovery is safer than guessing ownership. Identical bytes rewritten by a user with the exact same etag are indistinguishable, as with other etag-based tools. Filesystem races by hostile same-UID processes are not a security boundary. No GTK application live-provider refresh test is claimed.
+
 ## Required parent/runtime integration
 
 1. At the beginning of each `enable()` (before scheduling any style work): `StyleSheets.beginStyleWrites(this)`.

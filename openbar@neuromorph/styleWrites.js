@@ -55,7 +55,7 @@ export function queueStyleWrite(owner, task, {latest = false, cleanup = false} =
 // Completion includes the internal output stream close/atomic rename. Callback
 // errors must reject the returned promise, not escape into the main loop.
 export function replaceFile(file, contents, cancellable = null, etag = null) {
-    const bytes = GLib.Bytes.new(new TextEncoder().encode(contents));
+    const bytes = GLib.Bytes.new(typeof contents === 'string' ? new TextEncoder().encode(contents) : contents);
     return new Promise((resolve, reject) => {
         file.replace_contents_bytes_async(bytes, etag, false,
             Gio.FileCreateFlags.REPLACE_DESTINATION, cancellable, (object, result) => {

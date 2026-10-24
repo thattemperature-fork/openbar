@@ -24,6 +24,7 @@ import Pango from 'gi://Pango';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
 import {replaceFile, queueStyleWrite} from './styleWrites.js';
+import {updateGtkFile} from './gtkOwnership.js';
 export {beginStyleWrites, invalidateStyleWrites} from './styleWrites.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
@@ -901,82 +902,22 @@ function gtkSnapshot(obar, caller) {
 export function saveGtkCss(obar, caller) {
     const snapshot = gtkSnapshot(obar, caller);
     if (!snapshot) return Promise.resolve(false);
-    return queueStyleWrite(obar, cancellable => applyGtkCss(snapshot, cancellable), {cleanup: caller === 'disable'});
+    return queueStyleWrite(obar, () => applyGtkCss(obar, snapshot), {cleanup: caller === 'disable'});
 }
 
-async function applyGtkCss({applyGtk, gtkStrings}, cancellable) {
+async function applyGtkCss(owner, {applyGtk, gtkStrings}) {
     const configDir = GLib.get_user_config_dir();
-    const gtk3Dir = Gio.File.new_for_path(`${configDir}/gtk-3.0`);
-    const gtk4Dir = Gio.File.new_for_path(`${configDir}/gtk-4.0`);
-    // Sequential operations also keep error completion inside this queue entry.
-    for (const [idx, dir] of [gtk3Dir, gtk4Dir].entries()) {
-        // console.log(dir.get_path() +'\n' + gtkstring);
-
-        // Create dir if missing
-        if (!dir.query_exists(null)) {
-            try {
-                const file = Gio.File.new_for_path(dir.get_path());
-                file.make_directory_with_parents(null);
-            } catch (e) {
-                console.error('Error creating gtk config directory: ' + e);
-            }
-        }
-
-        let file = Gio.File.new_for_path(dir.get_path() + '/gtk.css');
-        let backup = Gio.File.new_for_path(dir.get_path() + '/gtk_backup_byOpenBar.css');
-        const isGtk = file.query_exists(null);
-        const isBackupOpenBar = backup.query_exists(null);
-        let isGtkOpenBar = false;
-        if(isGtk) {
-            try {
-                const [contents] = await file.load_contents_async(null);
-                if(contents) {
-                    const decoder = new TextDecoder('utf-8');
-                    const contentsString = decoder.decode(contents);
-                    const contentsHeader = contentsString.split('\n')[1];
-                    if(contentsHeader)
-                        isGtkOpenBar = contentsHeader.includes('/*** Open Bar GTK CSS ***/');
-                }
-            }
-            catch (e) {
-                console.error('Error reading gtk.css: ' + e);
-            }
-        }
-
-        // Disable extension or turn off Gtk app style
-        if(!applyGtk) {
-            if(isGtkOpenBar && isBackupOpenBar) {
-                try { // Restore backup
-                    await backup.move_async(file, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_DEFAULT, cancellable, null);
-                }
-                catch (e) {
-                    console.error('Error restoring gtk.css from backup: ' + e);
-                }
-            }
-            else if(isGtkOpenBar) {
-                try {
-                    await file.delete_async(GLib.PRIORITY_DEFAULT, cancellable);
-                }
-                catch (e) {
-                    console.error('Error deleting OpenBar gtk.css: ' + e);
-                }
-            }
-        }
-        // Turn On Gtk: Backup if existing (non-openbar) gtk.css and create new OpenBar gtk.css
-        else if(applyGtk) {
-            if(isGtk && !isGtkOpenBar) {
-                try {
-                    await file.move_async(backup, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_DEFAULT, cancellable, null);
-                }
-                catch (e) {
-                    console.error('Error backing up gtk.css: ' + e);
-                }
-            }
-
-            // Create stylesheet string and save to css file
-            await replaceFile(file, gtkStrings[idx], cancellable);
+    const failures = [];
+    for (const [idx, version] of [3, 4].entries()) {
+        const directory = Gio.File.new_for_path(`${configDir}/gtk-${version}.0`);
+        try {
+            await updateGtkFile(owner, directory, applyGtk ? gtkStrings[idx] : null);
+        } catch (error) {
+            failures.push(error);
+            if (applyGtk) break; // Never continue applying after backup/write failure.
         }
     }
+    if (failures.length) throw failures[0];
 }
 
 // Apply override to provide flatpak apps access to Gtk config css files
@@ -3809,7 +3750,7 @@ export function reloadStyle(obar, Me) {
         if (!current()) return false;
         await writeSVGs(snapshot, Me, cancellable, current);
         if (!current()) return false;
-        if (gtk) await applyGtkCss(gtk, cancellable);
+        if (gtk) await applyGtkCss(obar, gtk);
         if (!current() || obar._settings !== settings) return false;
         obar.msSVG = obar.mhSVG = obar.smfgSVG = false;
         if (gtk) obar.gtkCSS = false;
