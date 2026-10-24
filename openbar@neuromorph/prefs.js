@@ -53,6 +53,59 @@ export default class OpenbarPreferences extends ExtensionPreferences {
 
 class OpenbarPrefs {
 
+    constructor() {
+        this._settingsSignals = [];
+        this._uiTimeouts = new Set();
+        this._closed = false;
+    }
+
+    _connectSettings(signal, callback) {
+        const settings = this._settings;
+        const id = settings.connect(signal, (...args) => {
+            if (!this._closed)
+                callback(...args);
+        });
+        this._settingsSignals.push([settings, id]);
+        return id;
+    }
+
+    _setUiTimeout(callback, delay) {
+        if (this._closed)
+            return null;
+        const id = setTimeout(() => {
+            this._uiTimeouts.delete(id);
+            if (!this._closed)
+                callback();
+        }, delay);
+        this._uiTimeouts.add(id);
+        return id;
+    }
+
+    _clearUiTimeout(id) {
+        if (id) {
+            clearTimeout(id);
+            this._uiTimeouts.delete(id);
+        }
+    }
+
+    _close() {
+        if (this._closed)
+            return;
+        this._closed = true;
+        for (const [settings, id] of this._settingsSignals)
+            settings.disconnect(id);
+        this._settingsSignals = [];
+        for (const id of this._uiTimeouts)
+            clearTimeout(id);
+        this._uiTimeouts.clear();
+        this.timeoutId = this.quoteTimeoutId = null;
+        if (this.cssProvider) {
+            Gtk.StyleContext.remove_provider_for_display(this._display, this.cssProvider);
+            this.cssProvider = null;
+        }
+        this._display = null;
+    }
+
     // Trigger creation and application of auto-theme from background
     triggerAutoTheme() {
         // Cause autotheme to apply by toggling 'trigger-autotheme'
@@ -75,8 +128,8 @@ class OpenbarPrefs {
     // Trigger stylesheet save and reload with timeout to cancel quick-successive triggers
     setTimeoutStyleReload() {
         if(this.timeoutId)
-            clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(() => {
+            this._clearUiTimeout(this.timeoutId);
+        this.timeoutId = this._setUiTimeout(() => {
             this.triggerStyleReload();
             this.timeoutId = null;
         }, 400);
@@ -191,7 +244,7 @@ class OpenbarPrefs {
         });
 
         // Update widget when setting is changed (from import file)
-        this._settings.connect(`changed::${gsetting}`, () => {
+        this._connectSettings(`changed::${gsetting}`, () => {
             const colorArray = this._settings.get_strv(gsetting);
             const rgba = color.get_rgba();
             rgba.red = parseFloat(colorArray[0]);
@@ -371,11 +424,22 @@ class OpenbarPrefs {
         else
             this._settings.set_boolean('bgpalette', true);
         // Update palette once it is updated in settings
-        setTimeout(() => {this.updatePalette(window, false)}, 500);
+        this._setUiTimeout(() => {this.updatePalette(window, false)}, 500);
     }
 
     fillOpenbarPrefs(window, openbar) {
+        // Install cleanup before any fallible initialization, including before realize.
+        window.connect('close-request', () => { this._close(); return false; });
+        window.connect('unrealize', () => this._close());
+        try {
+            this._buildOpenbarPrefs(window, openbar);
+        } catch (error) {
+            this._close();
+            throw error;
+        }
+    }
 
+    _buildOpenbarPrefs(window, openbar) {
         // Get the settings object
         this._settings = openbar.getSettings();
 
@@ -393,9 +457,10 @@ class OpenbarPrefs {
 
         this.openbar = openbar;
 
+        this._display = Gdk.Display.get_default();
         this.cssProvider = new Gtk.CssProvider();
         this.cssProvider.load_from_path(`${this.openbar.path}/prefs.css`);
-        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), this.cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        Gtk.StyleContext.add_provider_for_display(this._display, this.cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
 
         // console.log('fillOpenbarPrefs: loadQuotesFromFile');
         this.loadQuotesFromFile();
@@ -409,16 +474,16 @@ class OpenbarPrefs {
         'radius-bottomleft', 'radius-bottomright', 'apply-menu-notif', 'apply-menu-shell', 'apply-accent-shell', 'apply-all-shell',
         'dashdock-style', 'dborder', 'dshadow', 'set-overview', 'set-bottom-margin'];
         settEvents.forEach(event => {
-            this._settings.connect('changed::'+event, () => {this.triggerStyleReload();});
+            this._connectSettings('changed::'+event, () => {this.triggerStyleReload();});
         });
 
         // Update palette in preferences window on background change
-        this._settings.connect('changed::bg-change', () => {
+        this._connectSettings('changed::bg-change', () => {
             this.updatePalette(window, false);
         });
 
         // Refresh auto-theme on accent-override switch change, if auto-theme set
-        // this._settings.connect('changed::accent-override', () => {
+        // this._connectSettings('changed::accent-override', () => {
         //     const mode = this._settings.get_string('color-scheme');
         //     let theme;
         //     if(mode == 'prefer-dark')
@@ -828,14 +893,14 @@ class OpenbarPrefs {
             if(themeDark == 'Select Theme' && themeLight == 'Select Theme') {
                 applyThemeErrLbl.label = `<span color="#ff8c00">Please select desired themes to apply.</span>`;
                 applyThemeErrLbl.sensitive = true;
-                setTimeout(() => { applyThemeErrLbl.label = ``;
+                this._setUiTimeout(() => { applyThemeErrLbl.label = ``;
                                     applyThemeErrLbl.sensitive = false;}, 3000);
                 return;
             }
             else {
                 applyThemeErrLbl.label = `<span color="#00ddee">Selected theme will apply in respective mode.</span>`;
                 applyThemeErrLbl.sensitive = true;
-                setTimeout(() => { applyThemeErrLbl.label = ``;
+                this._setUiTimeout(() => { applyThemeErrLbl.label = ``;
                                     applyThemeErrLbl.sensitive = false;}, 3000);
             }
             if(themeDark != 'Select Theme')
@@ -1281,7 +1346,7 @@ class OpenbarPrefs {
         );
 
         // Update font widget when font changed from settings (due to import file)
-        this._settings.connect('changed::font', () => {
+        this._connectSettings('changed::font', () => {
             let font = obar._settings.get_string('font');
             fontBtn.set_font(font);
         });
@@ -2850,12 +2915,7 @@ class OpenbarPrefs {
 
         /////////////////////////////////////////////////////////////////////
 
-        window.connect('unrealize', () => {
-            if(this.quoteTimeoutId) {
-                clearTimeout(this.quoteTimeoutId);
-                this.quoteTimeoutId = null;
-            }
-        });
+
 
     }
 
@@ -2891,8 +2951,8 @@ class OpenbarPrefs {
         this.animateQuote(quoteLabel, this.quoteBlank);
         const timeout = this.quoteBlank? 500 : 10500;
         if(this.quoteTimeoutId)
-            clearTimeout(this.quoteTimeoutId);
-        this.quoteTimeoutId = setTimeout(() => {
+            this._clearUiTimeout(this.quoteTimeoutId);
+        this.quoteTimeoutId = this._setUiTimeout(() => {
             this.setQuoteLabel(quoteLabel);
         }, timeout);
         this.quoteBlank = !this.quoteBlank;
