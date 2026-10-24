@@ -23,9 +23,11 @@ import Gio from 'gi://Gio';
 import Pango from 'gi://Pango';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
-import {replaceFile, queueStyleWrite} from './styleWrites.js';
+import {replaceFile, queueStyleWrite, beginStyleWrites as beginWrites, invalidateStyleWrites as invalidateWrites} from './styleWrites.js';
 import {updateGtkFile} from './gtkOwnership.js';
-export {beginStyleWrites, invalidateStyleWrites} from './styleWrites.js';
+import {updateFlatpakOverrides} from './flatpakOwnership.js';
+export function beginStyleWrites(obar) { beginWrites(obar); }
+export function invalidateStyleWrites(obar) { return invalidateWrites(obar); }
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
 Gio._promisify(Gio.File.prototype, 'move_async', 'move_finish');
@@ -922,59 +924,8 @@ async function applyGtkCss(owner, {applyGtk, gtkStrings}) {
 
 // Apply override to provide flatpak apps access to Gtk config css files
 export function saveFlatpakOverrides(obar, caller) {
-    const applyFlatpak = obar._settings.get_boolean('apply-flatpak');
-    if (!applyFlatpak && !obar.fsystemChanged) return;
-    const dataDir = GLib.get_user_data_dir();
-    const overrideDir = Gio.File.new_for_path(`${dataDir}/flatpak/overrides`);
-    if (!overrideDir.query_exists(null)) {
-        try {
-            const file = Gio.File.new_for_path(overrideDir.get_path());
-            file.make_directory_with_parents(null);
-        } catch (e) {
-            console.error('Error creating flatpak override directory: ' + e);
-        }
-    }
-
-    let keyfile = GLib.KeyFile.new();
-    let globalFile = Gio.File.new_for_path(overrideDir.get_path() + '/global');
-    if(!globalFile.query_exists(null)) {
-        try {
-            globalFile.create(Gio.FileCreateFlags.NONE, null);
-            keyfile.set_string('Context', 'filesystems', '');
-            keyfile.save_to_file(globalFile.get_path());
-        }
-        catch (e) {
-            console.error('Error creating flatpak override global file: ' + e);
-        }
-    }
-
-    try {
-        keyfile.load_from_file(globalFile.get_path(), GLib.KeyFileFlags.NONE);
-    }
-    catch (e) {
-        console.error('Error loading flatpak override global file: ' + e);
-    }
-
-    try {
-        if(caller == 'disable' || !applyFlatpak) {
-            if(!obar.fsystemBackup)
-                obar.fsystemBackup = '';
-            keyfile.set_string('Context', 'filesystems', obar.fsystemBackup);
-            keyfile.save_to_file(globalFile.get_path());
-        }
-        else if(applyFlatpak) {
-            obar.fsystemBackup = keyfile.get_string('Context', 'filesystems');
-            if(!obar.fsystemBackup)
-                obar.fsystemBackup = '';
-            let fsystem = obar.fsystemBackup + ';xdg-config/gtk-3.0:ro;xdg-config/gtk-4.0:ro;';
-            keyfile.set_string('Context', 'filesystems', fsystem);
-            keyfile.save_to_file(globalFile.get_path());
-            obar.fsystemChanged = true;
-        }
-    }
-    catch (e) {
-        console.error('Error saving flatpak override global file: ' + e);
-    }
+    const apply = caller !== 'disable' && !!obar._settings?.get_boolean('apply-flatpak');
+    return queueStyleWrite(obar, () => updateFlatpakOverrides(obar, apply), {cleanup: caller === 'disable'});
 }
 
 function parseRGB(rgb) {

@@ -49,6 +49,23 @@ All eleven PASS. Backup is an exclusive asynchronous copy (never move/overwrite)
 
 Limitations: ledger is per extension instance, not a persistent crash-recovery journal. Existing legacy backups are never adopted or overwritten automatically; user recovery is safer than guessing ownership. Identical bytes rewritten by a user with the exact same etag are indistinguishable, as with other etag-based tools. Filesystem races by hostile same-UID processes are not a security boundary. No GTK application live-provider refresh test is claimed.
 
+### TODO 12
+RED: real updater against private override files fails repeated-enable dedup; missing filesystems; no-file enable/enable/disable; null-settings cleanup; real symlink refusal; real directory write failure. Baseline re-enable after user denial/permission change spuriously re-adds permissions (asserted **before** disable, since the baseline can accidentally restore that interim snapshot later). Additional baseline fixtures: `$TMPDIR/openbar-flatpak-red.pNm1ay`.
+
+GREEN command (same GI_TYPELIB_PATH setup):
+```sh
+nix shell nixpkgs#gjs nixpkgs#glib.dev -c bash tests/run-write-tests.sh
+```
+Default runner executes all twenty scenarios, each in an isolated child process/private settings/config/data directories. All twenty PASS. Runner requires exact success output and no logged errors, preventing false positives from swallowed signal callback exceptions. The updater reads current keyfile each time, preserves comments/unrelated keys/preexisting grants, deduplicates new grants, and keeps only the added-token set (not a whole-list restore snapshot). Removed/changed/duplicated owned tokens are relinquished and not re-added in the same session. Missing Context/filesystems works. Disable without ownership creates nothing. The active-write disable test starts actual Gio replacement then invalidates and clears settings; serialized cleanup removes published grants afterward.
+
+Limitations: ownership is per extension instance; crashes are not journaled. Identical user re-addition of exactly the same token between observations is indistinguishable; changed modes, denials, removals and duplicates are preserved conservatively. Conflicting same-path grant/denial is treated as user-owned and not overridden. Original-less global files may remain as an empty Context keyfile after cleanup, with **no granted filesystems**. No actual Flatpak app sandbox launch is claimed.
+
+### Final regression checks
+- Byte-preservation review caught lossy UTF8 restore of a non-UTF8 comment. Added `gtk-original-bytes`: RED failed exact-byte comparison; GREEN restores raw original bytes and compares ownership bytewise. Twenty scenario final run: all PASS, artifacts `$TMPDIR/openbar-writes.L6AkXn`.
+- GNOME 50.4 native existing menu regression: `__EGL_VENDOR_LIBRARY_FILENAMES="$(nix eval --raw nixpkgs#mesa.out.outPath)/share/glvnd/egl_vendor.d/50_mesa.json" nix shell nixpkgs#gnome-shell nixpkgs#glib.dev nixpkgs#dbus -c bash tests/run-menu-tests.sh` → `PASS: 1319 assertions`, Shell exit 0, no JS/extension error matches in shell.log (`openbar-menu-test.OtCPTo`).
+- Same Nix/Mesa command with `bash tests/run-date-menu-tests.sh lifecycle` → `PASS Shell 50.4: lifecycle: 24 assertions`, Shell exit 0 (`openbar-lifecycle-test.rv8WyV`). Existing default lifecycle smoke only; does NOT replace the required new parent begin/invalidate/error-handler wiring or prove optional-feature live UI refresh.
+- Generator comparison: copy `01fb242:openbar@neuromorph/stylesheets.js` to scratch baseline, compile private schemas, `GSETTINGS_BACKEND=memory gjs -m tests/stylesheet-scope.js "$dir/baseline.js" "$dir"` in the same GJS Nix/GI setup → 553 assertions PASS, existing rule declarations/order unchanged, global modes byte-identical. No CSS rule content changed by this lane.
+
 ## Required parent/runtime integration
 
 1. At the beginning of each `enable()` (before scheduling any style work): `StyleSheets.beginStyleWrites(this)`.
