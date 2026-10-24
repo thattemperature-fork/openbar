@@ -115,6 +115,7 @@ export default class Openbar extends Extension {
         this.msgLists = [];
         this.msgListIds = [];
         this._timeouts = new Map();
+        this._appearance = new Map();
     }
 
     _queueTimeout(name, callback, delay) {
@@ -140,6 +141,63 @@ export default class Openbar extends Extension {
             this[name] = null;
         }
         this._timeouts?.clear();
+    }
+
+    _writeAppearance(key, value) {
+        const settings = this._intSettings;
+        const current = settings.get_string(key);
+        let owned = this._appearance.get(key);
+        if(owned && current !== owned.last) {
+            this._restoreAppearance([key]); // releases ownership, preserves the user's change
+            owned = null;
+        }
+        if(current === value)
+            return; // no change, no new ownership
+        if(!owned) {
+            owned = {original: current, last: current, writing: false};
+            owned.id = settings.connect(`changed::${key}`, () => {
+                if(!owned.writing && settings.get_string(key) !== owned.last) {
+                    settings.disconnect(owned.id);
+                    this._appearance.delete(key);
+                }
+            });
+            this._appearance.set(key, owned);
+        }
+        owned.writing = true;
+        try {
+            if(settings.set_string(key, value))
+                owned.last = value;
+        } finally {
+            owned.writing = false;
+        }
+    }
+
+    _restoreAppearance(keys = [...this._appearance.keys()]) {
+        for(const key of keys) {
+            const owned = this._appearance.get(key);
+            if(!owned)
+                continue;
+            this._appearance.delete(key);
+            this._intSettings.disconnect(owned.id);
+            if(this._intSettings.get_string(key) === owned.last)
+                this._intSettings.set_string(key, owned.original);
+        }
+    }
+
+    _updateAppearance(key) {
+        if(!['mscolor', 'set-yarutheme', 'enabled'].includes(key))
+            return;
+        if(key !== 'set-yarutheme' && this.gnomeVersion >= 47)
+            this._writeAppearance('accent-color', AutoThemes.getClosestGnomeAccent(this));
+        if(this._settings.get_boolean('set-yarutheme')) {
+            const suffix = this._intSettings.get_string('color-scheme') === 'prefer-dark' ? '-dark' : '';
+            const color = AutoThemes.getClosestYaruTheme(this);
+            const theme = 'Yaru' + (color === 'default' ? '' : '-' + color) + suffix;
+            this._writeAppearance('gtk-theme', theme);
+            this._writeAppearance('icon-theme', theme);
+        } else {
+            this._restoreAppearance(['gtk-theme', 'icon-theme']);
+        }
     }
 
     // Generate a color palette from desktop background image
@@ -712,36 +770,7 @@ export default class Openbar extends Extension {
             StyleSheets.reloadStyle(this, this);
         }
 
-        // Auto set closest Gnome Accent color
-        if(key == 'mscolor' && this.gnomeVersion >= 47) {
-            let closestAccent = AutoThemes.getClosestGnomeAccent(this);
-            this._intSettings.set_string('accent-color', closestAccent);
-        }
-        // Auto set closest Yaru theme
-        if(key == 'mscolor' || key == 'set-yarutheme') {
-            let setYaruTheme = this._settings.get_boolean('set-yarutheme');
-            if(key == 'set-yarutheme') {
-                if(setYaruTheme) {
-                    this.yaruBackup = this._intSettings.get_string('gtk-theme');
-                    this.iconBackup = this._intSettings.get_string('icon-theme');
-                }
-                else {
-                    if(this.yaruBackup)
-                        this._intSettings.set_string('gtk-theme', this.yaruBackup);
-                    if(this.iconBackup)
-                        this._intSettings.set_string('icon-theme', this.iconBackup);
-                }
-            }
-            if(setYaruTheme) {
-                let colorScheme = this._intSettings.get_string('color-scheme');
-                let modeSuffix = colorScheme == 'prefer-dark' ? '-dark' : '';
-                let yaruColor = AutoThemes.getClosestYaruTheme(this);
-                yaruColor = (yaruColor == 'default') ? '' : '-'+yaruColor;
-                let yaruTheme = 'Yaru' + yaruColor + modeSuffix;
-                this._intSettings.set_string('gtk-theme', yaruTheme);
-                this._intSettings.set_string('icon-theme', yaruTheme);
-            }
-        }
+        this._updateAppearance(key);
 
         // Set SVG icons update flags
         if(key == 'mscolor') {
@@ -1045,6 +1074,7 @@ export default class Openbar extends Extension {
         this.gtkCSS = true;
         StyleSheets.saveGtkCss(this, 'enable');
         AutoThemes.onModeChange(this);
+        this._updateAppearance('enabled');
     }
 
     updateBguri(obj, signal) {
@@ -1649,6 +1679,7 @@ export default class Openbar extends Extension {
         this._backgroundSettingsConnected = false;
 
         this.disconnectWindowSignals();
+        this._restoreAppearance();
 
 
         for(let i=0; i<this.msgLists.length; i++) {

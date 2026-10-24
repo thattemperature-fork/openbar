@@ -11,7 +11,7 @@ export class Emitter {
 export class Settings extends Emitter {
     constructor(values = {}) { super(); this.values = values; }
     get_string(k) { return this.values[k] ?? ''; }
-    set_string(k, v) { this.values[k] = v; this.emit('changed', k); }
+    set_string(k, v) { this.values[k] = v; this.emit('changed', k); this.emit(`changed::${k}`, k); return true; }
     get_boolean(k) { return this.values[k] ?? false; }
     set_boolean(k, v) { this.values[k] = v; }
     get_double(k) { return this.values[k] ?? 0; }
