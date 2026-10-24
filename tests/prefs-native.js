@@ -59,11 +59,125 @@ async function lifecycle() {
     prefs.loadQuotesFromFile = load;
     window.destroy();
 }
+async function transactions() {
+    const prefs = new OpenbarPrefs();
+    const app = new Adw.Application({application_id: 'org.example.OpenbarPrefsRegression', flags: Gio.ApplicationFlags.NON_UNIQUE});
+    app.register(null);
+    const window = new Adw.PreferencesWindow({application: app});
+    prefs.fillOpenbarPrefs(window, extension);
+    let holds = 0, releases = 0;
+    const hold = app.hold.bind(app), releaseApp = app.release.bind(app);
+    app.hold = () => {holds++; hold();};
+    app.release = () => {releases++; releaseApp();};
+    const s = prefs._settings;
+    const chooserClass = Gtk.FileChooserDialog;
+    let dialog;
+    Gtk.FileChooserDialog = class {
+        constructor() {dialog = this;}
+        add_button() {} connect(_signal, cb) {this.callback = cb;}
+        get_file() {return Gio.File.new_for_path(`${dir}/missing/export.ini`);}
+        show() {} destroy() {this.destroyed = true;}
+    };
+    const errors = [];
+    prefs._reportSettingsError = (_window, error) => errors.push(String(error));
+    s.set_boolean('import-export', false);
+    prefs.exportSettings(window);
+    try {await dialog.callback(dialog, Gtk.ResponseType.ACCEPT);} catch (_) { /* old source throws */ }
+    assert(!s.get_boolean('import-export'), 'export file failure restores pause in finally');
+    assert(errors.length === 1 && dialog.destroyed, 'export error reported and chooser destroyed');
+    // Cancellation never acquires a pause, including an existing external pause.
+    s.set_boolean('import-export', true);
+    prefs.importSettings(window);
+    await dialog.callback(dialog, Gtk.ResponseType.CANCEL);
+    assert(s.get_boolean('import-export') && dialog.destroyed, 'chooser cancellation preserves preexisting pause');
+    s.set_boolean('import-export', false);
+    Gtk.FileChooserDialog = chooserClass;
+    const file = Gio.File.new_for_path(`${dir}/export.ini`);
+    for (const paused of [false, true]) {
+        s.set_boolean('pause-reload', paused);
+        await prefs._exportSettingsFile(file);
+        const contents = new TextDecoder().decode(file.load_contents(null)[1]);
+        assert(!contents.includes('import-export=') && !contents.includes('pause-reload='), 'export omits both transient flags');
+        assert(s.get_boolean('pause-reload') === paused && !s.get_boolean('import-export'), 'export preserves prior pause values');
+        assert(contents.includes('height=') && contents.includes('bguri='), 'export includes default settings without mutating all keys');
+    }
+    s.set_boolean('pause-reload', false);
+    await prefs._importSettingsFile(file);
+    assert(!s.get_boolean('import-export'), 'full exported schema snapshot imports through real dconf');
+    const imported = Gio.File.new_for_path(`${dir}/import.ini`);
+    GLib.file_set_contents(imported.get_path(), "[/]\nheight=37.0\nimport-export=true\npause-reload=true\nbguri='foreign'\ndark-bguri='foreign-dark'\nlight-bguri='foreign-light'\n");
+    const wallpaper = ['bguri', 'dark-bguri', 'light-bguri'];
+    wallpaper.forEach((key, i) => s.set_string(key, `file:///private/local-${i}.png`));
+    Gio.Settings.sync();
+    const before = s.get_boolean('trigger-reload');
+    await prefs._importSettingsFile(imported);
+    await sleep(60);
+    assert(s.get_double('height') === 37, 'real private dconf load completed before promise resolves');
+    assert(wallpaper.every((key, i) => s.get_string(key) === `file:///private/local-${i}.png`), 'all three local wallpaper URIs preserved');
+    assert(!s.get_boolean('import-export') && !s.get_boolean('pause-reload') && s.get_boolean('trigger-reload') !== before, 'import restores pauses and reloads only after completion');
+    const rejected = async (operation, message) => {let caught = false; try {await operation();} catch (_) {caught = true;} assert(caught && !s.get_boolean('import-export'), message);};
+    await rejected(() => prefs._importSettingsFile(Gio.File.new_for_path(`${dir}/absent.ini`)), 'missing import file rejects and unpauses');
+    await rejected(() => prefs._exportSettingsFile(null), 'null selection rejects without pause');
+    const snapshot = prefs._settingsSnapshot;
+    prefs._settingsSnapshot = () => {throw Error('synchronous snapshot failure');};
+    await rejected(() => prefs._exportSettingsFile(file), 'synchronous snapshot failure restores pause');
+    prefs._settingsSnapshot = snapshot;
+    GLib.file_set_contents(imported.get_path(), "[/]\nheight='bad type'\n");
+    await rejected(() => prefs._importSettingsFile(imported), 'invalid variant rejects before dconf mutation');
+    const sync = Gio.Settings.sync;
+    Gio.Settings.sync = () => {throw Error('synchronous backend flush failure');};
+    await rejected(() => prefs._exportSettingsFile(file), 'synchronous backend sync failure releases pause and transaction ownership');
+    Gio.Settings.sync = sync;
+    await prefs._exportSettingsFile(file);
+    const spawn = Gio.Subprocess.new;
+    Gio.Subprocess.new = () => {throw Error('synchronous spawn failure');};
+    GLib.file_set_contents(imported.get_path(), "[/]\nheight=38.0\n");
+    await rejected(() => prefs._importSettingsFile(imported), 'synchronous subprocess failure restores pause');
+    Gio.Subprocess.new = (argv, flags) => spawn(['sh', '-c', 'printf child-failed >&2; exit 23'], flags);
+    await rejected(() => prefs._importSettingsFile(imported), 'real child nonzero status rejects and reaps');
+    Gio.Subprocess.new = spawn;
+    // Hold delivery of a real child result, not a synthetic success, to force close/overlap.
+    let release, entered;
+    const entry = new Promise(resolve => entered = resolve);
+    const communicate = Gio.Subprocess.prototype.communicate_utf8_async;
+    Gio.Subprocess.prototype.communicate_utf8_async = function (input, cancellable, callback) {
+        communicate.call(this, input, cancellable, (p, result) => {
+            release = () => callback(p, result);
+            entered();
+        });
+    };
+    const active = prefs._importSettingsFile(imported);
+    await entry;
+    assert(s.get_boolean('import-export'), 'pause remains held until real child completion delivered');
+    let overlap = false;
+    try {await prefs._exportSettingsFile(file);} catch (_) {overlap = true;}
+    assert(overlap && s.get_boolean('import-export'), 'overlapping export rejected without releasing import owner');
+    const messageDialog = Gtk.MessageDialog;
+    let resetDialog;
+    Gtk.MessageDialog = class {
+        constructor() {resetDialog = this;}
+        add_button() {} set_default_response() {} show() {}
+        connect(_signal, cb) {this.callback = cb;}
+        destroy() {this.destroyed = true;}
+    };
+    prefs.resetSettingsDialog(window);
+    await resetDialog.callback(resetDialog, Gtk.ResponseType.YES);
+    assert(s.get_boolean('import-export') && errors.length === 2 && resetDialog.destroyed, 'overlapping reset reports error without releasing import pause');
+    Gtk.MessageDialog = messageDialog;
+    window.present(); await sleep(30); window.destroy();
+    release(); await active;
+    Gio.Subprocess.prototype.communicate_utf8_async = communicate;
+    assert(!s.get_boolean('import-export') && s.get_double('height') === 38, 'close does not abandon successful in-flight import or restoration');
+    assert(holds > 0 && holds === releases, 'application held through transactions and balanced on all outcomes');
+    const config = GLib.getenv('XDG_CONFIG_HOME');
+    assert(config.startsWith(dir) && Gio.File.new_for_path(`${config}/dconf/user`).query_exists(null), 'real dconf database exists only in disposable private config');
+}
 async function main() {
     await setup();
     print(`GTK ${Gtk.get_major_version()}.${Gtk.get_minor_version()}.${Gtk.get_micro_version()}`);
     settings.set_int('monitor-width', 1024); settings.set_int('monitor-height', 768);
-    await lifecycle();
+    if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions') await transactions();
+    else await lifecycle();
     print('PASS preferences native regression complete');
 }
 const loop = new GLib.MainLoop(null, false);

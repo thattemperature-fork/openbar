@@ -26,18 +26,10 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import {ExtensionPreferences, gettext as _, pgettext} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-// Retain compatibility with GLib < 2.80, which lacks GioUnix (from GSConnect extension)
-let GioUnix;
-try {
-    GioUnix = (await import('gi://GioUnix?version=2.0')).default;
-} catch (e) {
-    GioUnix = {
-        InputStream: Gio.UnixInputStream,
-        OutputStream: Gio.UnixOutputStream,
-    };
-}
-
 const SCHEMA_PATH = '/org/gnome/shell/extensions/openbar/';
+const TRANSIENT_SETTINGS = ['import-export', 'pause-reload'];
+const WALLPAPER_SETTINGS = ['bguri', 'dark-bguri', 'light-bguri'];
+let settingsTransactionActive = false;
 
 //-----------------------------------------------
 
@@ -440,6 +432,7 @@ class OpenbarPrefs {
     }
 
     _buildOpenbarPrefs(window, openbar) {
+        this._application = window.get_application();
         // Get the settings object
         this._settings = openbar.getSettings();
 
@@ -2931,15 +2924,22 @@ class OpenbarPrefs {
         dialog.add_button(_("Reset"), Gtk.ResponseType.YES);
         dialog.set_default_response(Gtk.ResponseType.CANCEL);
 
-        dialog.connect("response", (dialog, responseId) => {
-          if (responseId == Gtk.ResponseType.YES) {
-            this._settings.set_boolean('import-export', true);
-            let keys = this._settings.list_keys();
-            let keysToKeep = ['import-export', 'default-font', 'bguri', 'dark-bguri', 'light-bguri'];
-            keys.forEach(k => { if(!keysToKeep.includes(k)) this._settings.reset(k); });
-            this._settings.set_boolean('import-export', false);
-          }
-          dialog.destroy();
+        dialog.connect('response', async (dialog, responseId) => {
+            try {
+                if (responseId === Gtk.ResponseType.YES && !this._closed) {
+                    await this._settingsTransaction(settings => {
+                        const keep = [...TRANSIENT_SETTINGS, 'default-font', ...WALLPAPER_SETTINGS];
+                        for (const key of settings.settings_schema.list_keys()) {
+                            if (!keep.includes(key))
+                                settings.reset(key);
+                        }
+                    }, true);
+                }
+            } catch (error) {
+                this._reportSettingsError(window, error);
+            } finally {
+                dialog.destroy();
+            }
         });
 
         dialog.show();
@@ -2988,97 +2988,169 @@ class OpenbarPrefs {
         // console.log('QUTES: ' + this.quotes);
     }
 
-    importSettings(window) {
-        let fileChooser = new Gtk.FileChooserDialog({
-            title: _("Import Settings for Open Bar Theme"),
-            action: Gtk.FileChooserAction.OPEN,
-            transient_for: window,
+    _reportSettingsError(window, error) {
+        console.error(`Open Bar settings: ${error.message ?? error}`);
+        if (this._closed)
+            return;
+        const dialog = new Gtk.MessageDialog({
+            modal: true, transient_for: window,
+            text: _('Unable to complete Open Bar settings operation'),
+            secondary_text: String(error.message ?? error),
         });
-        fileChooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL);
-        fileChooser.add_button(_("Open"), Gtk.ResponseType.ACCEPT);
+        dialog.add_button(_('Close'), Gtk.ResponseType.CLOSE);
+        dialog.connect('response', () => dialog.destroy());
+        dialog.present();
+    }
 
-        fileChooser.connect('response', (self, response) => {
-          if (response == Gtk.ResponseType.ACCEPT) {
-            this._settings.set_boolean('import-export', true);
-            // Save current BG URIs since the one in imported file maybe invalid
-            let bguri = this._settings.get_string('bguri');
-            let darkBguri =  this._settings.get_string('dark-bguri');
-            let lightBguri = this._settings.get_string('light-bguri');
-
-            // Load settings from file
-            let filePath = fileChooser.get_file().get_path();
-            if (filePath && GLib.file_test(filePath, GLib.FileTest.EXISTS)) {
-                let file = Gio.File.new_for_path(filePath);
-
-                let [success_, pid_, stdin, stdout, stderr] =
-                    GLib.spawn_async_with_pipes(
-                        null,
-                        ['dconf', 'load', SCHEMA_PATH],
-                        null,
-                        GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-                        null
-                    );
-
-                stdin = new GioUnix.OutputStream({fd: stdin, close_fd: true});
-                GLib.close(stdout);
-                GLib.close(stderr);
-
-                stdin.splice(file.read(null),
-                    Gio.OutputStreamSpliceFlags.CLOSE_SOURCE | Gio.OutputStreamSpliceFlags.CLOSE_TARGET, null);
-
-                setTimeout(() => {
-                    // Replace BG URIs with saved URIs
-                    this._settings.set_string('bguri', bguri);
-                    this._settings.set_string('dark-bguri', darkBguri);
-                    this._settings.set_string('light-bguri', lightBguri);
-
-                    // Disable import/export pause to enable style reload
-                    this._settings.set_boolean('import-export', false);
-
-                    // Trigger stylesheet reload to apply new settings
-                    this.triggerStyleReload();
-                }, 3000);
-
+    async _settingsTransaction(action, reload = false) {
+        if (settingsTransactionActive)
+            throw new Error(_('Another settings operation is already in progress.'));
+        settingsTransactionActive = true;
+        const settings = this._settings;
+        const saved = new Map();
+        let succeeded = false;
+        let held = false;
+        try {
+            if (this._application) {
+                this._application.hold();
+                held = true;
             }
-          }
-          fileChooser.destroy();
-        });
+            for (const key of ['import-export', 'pause-reload'])
+                saved.set(key, settings.get_boolean(key));
+            settings.set_boolean('import-export', true);
+            await action(settings);
+            succeeded = true;
+        } finally {
+            try {
+                // Transactions outlive the UI: never leave the extension paused on close.
+                try {
+                    if (saved.has('pause-reload'))
+                        settings.set_boolean('pause-reload', saved.get('pause-reload'));
+                } finally {
+                    if (saved.has('import-export'))
+                        settings.set_boolean('import-export', saved.get('import-export'));
+                }
+                Gio.Settings.sync();
+                if (succeeded && reload && !saved.get('import-export') && !saved.get('pause-reload'))
+                    settings.set_boolean('trigger-reload', !settings.get_boolean('trigger-reload'));
+                Gio.Settings.sync();
+            } finally {
+                settingsTransactionActive = false;
+                if (held)
+                    this._application.release();
+            }
+        }
+    }
 
+    _settingsSnapshot(settings) {
+        const data = new GLib.KeyFile();
+        for (const key of settings.settings_schema.list_keys()) {
+            if (!TRANSIENT_SETTINGS.includes(key))
+                data.set_value('/', key, settings.get_value(key).print(true));
+        }
+        return data.to_data()[0];
+    }
+
+    _validatedImport(contents, settings) {
+        const source = new GLib.KeyFile();
+        source.load_from_data(contents, new TextEncoder().encode(contents).length, GLib.KeyFileFlags.NONE);
+        const batches = [];
+        let data = new GLib.KeyFile();
+        let count = 0;
+        for (const group of source.get_groups()[0]) {
+            if (group !== '/')
+                throw new Error(_('Settings file contains an unexpected section.'));
+            for (const key of source.get_keys(group)[0]) {
+                if (TRANSIENT_SETTINGS.includes(key) || WALLPAPER_SETTINGS.includes(key))
+                    continue;
+                if (!settings.settings_schema.has_key(key))
+                    throw new Error(`Unknown settings key: ${key}`);
+                const schemaKey = settings.settings_schema.get_key(key);
+                const value = GLib.Variant.parse(schemaKey.get_value_type(), source.get_value(group, key), null, null);
+                if (!schemaKey.range_check(value))
+                    throw new Error(`Invalid settings value: ${key}`);
+                data.set_value('/', key, value.print(true));
+                // GLib GSettings asserts on >=256 changed keys in one backend event.
+                if (++count === 128) {
+                    batches.push(data.to_data()[0]);
+                    data = new GLib.KeyFile();
+                    count = 0;
+                }
+            }
+        }
+        if (count)
+            batches.push(data.to_data()[0]);
+        return batches;
+    }
+
+    async _importSettingsFile(file) {
+        if (!file)
+            throw new Error(_('No settings file selected.'));
+        return this._settingsTransaction(async settings => {
+            const [, bytes] = await new Promise((resolve, reject) => file.load_contents_async(null, (f, result) => {
+                try {resolve(f.load_contents_finish(result));} catch (error) {reject(error);}
+            }));
+            // Never load wallpaper paths or transient pause flags from another machine.
+            const batches = this._validatedImport(new TextDecoder().decode(bytes), settings);
+            for (const contents of batches) {
+                const process = Gio.Subprocess.new(['dconf', 'load', SCHEMA_PATH],
+                    Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
+                const [, , stderr] = await new Promise((resolve, reject) => process.communicate_utf8_async(contents, null, (p, result) => {
+                    try {resolve(p.communicate_utf8_finish(result));} catch (error) {reject(error);}
+                }));
+                if (!process.get_successful())
+                    throw new Error(`dconf load failed: ${stderr.trim() || 'unsuccessful exit'}`);
+            }
+        }, true);
+    }
+
+    async _exportSettingsFile(file) {
+        if (!file)
+            throw new Error(_('No destination file selected.'));
+        return this._settingsTransaction(async settings => {
+            const bytes = new TextEncoder().encode(this._settingsSnapshot(settings));
+            await new Promise((resolve, reject) => file.replace_contents_async(bytes, null, false,
+                Gio.FileCreateFlags.REPLACE_DESTINATION, null, (f, result) => {
+                    try {resolve(f.replace_contents_finish(result));} catch (error) {reject(error);}
+                }));
+        });
+    }
+
+    _chooseSettingsFile(window, importing) {
+        if (this._closed)
+            return;
+        const fileChooser = new Gtk.FileChooserDialog({
+            title: importing ? _('Import Settings for Open Bar Theme') : _('Export Settings for Open Bar Theme'),
+            action: importing ? Gtk.FileChooserAction.OPEN : Gtk.FileChooserAction.SAVE,
+            transient_for: window, modal: true,
+        });
+        fileChooser.add_button(_('Cancel'), Gtk.ResponseType.CANCEL);
+        fileChooser.add_button(importing ? _('Open') : _('Save'), Gtk.ResponseType.ACCEPT);
+        fileChooser.connect('response', async (self, response) => {
+            try {
+                if (response === Gtk.ResponseType.ACCEPT && !this._closed) {
+                    const file = self.get_file();
+                    self.hide?.();
+                    if (importing)
+                        await this._importSettingsFile(file);
+                    else
+                        await this._exportSettingsFile(file);
+                }
+            } catch (error) {
+                this._reportSettingsError(window, error);
+            } finally {
+                self.destroy();
+            }
+        });
         fileChooser.show();
     }
 
+    importSettings(window) {
+        this._chooseSettingsFile(window, true);
+    }
+
     exportSettings(window) {
-        let fileChooser = new Gtk.FileChooserDialog({
-            title: _("Export Settings for Open Bar Theme"),
-            action: Gtk.FileChooserAction.SAVE,
-            transient_for: window,
-        });
-        fileChooser.add_button(_("Cancel"), Gtk.ResponseType.CANCEL);
-        fileChooser.add_button(_("Save"), Gtk.ResponseType.ACCEPT);
-
-        fileChooser.connect('response', (self, response) => {
-          if (response == Gtk.ResponseType.ACCEPT) {
-            this._settings.set_boolean('import-export', true);
-            let filePath = fileChooser.get_file().get_path();
-            const file = Gio.file_new_for_path(filePath);
-            const raw = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-            const out = Gio.BufferedOutputStream.new_sized(raw, 4096);
-
-            // Settings not updated by user (default) aren't caught by dconf, so force update
-            let keys = this._settings.list_keys();
-            keys.forEach(k => {
-                let value = this._settings.get_value(k);
-                this._settings.set_value(k, value);
-            });
-
-            out.write_all(GLib.spawn_command_line_sync(`dconf dump ${SCHEMA_PATH}`)[1], null);
-            out.close(null);
-            setTimeout(() => {this._settings.set_boolean('import-export', false)}, 1000);
-          }
-          fileChooser.destroy();
-        });
-
-        fileChooser.show();
+        this._chooseSettingsFile(window, false);
     }
 
 }
