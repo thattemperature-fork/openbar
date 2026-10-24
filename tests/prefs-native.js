@@ -49,6 +49,12 @@ async function lifecycle() {
         assert(paletteCalls === calls, 'no closed-widget palette or timeout callbacks');
         assert(settings.get_boolean('trigger-reload') === reload, 'no pending style reload after close');
     }
+    // A caller can destroy an unpresented window after construction.
+    const unpresented = new Adw.PreferencesWindow();
+    const early = new OpenbarPrefs();
+    early.fillOpenbarPrefs(unpresented, extension);
+    unpresented.destroy(); await sleep(30);
+    assert(!early.cssProvider && early._settingsSignals.length === 0, 'destroy before realize releases all preferences resources');
     const prefs = new OpenbarPrefs();
     const window = new Adw.PreferencesWindow();
     const load = prefs.loadQuotesFromFile;

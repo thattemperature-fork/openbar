@@ -96,6 +96,11 @@ class OpenbarPrefs {
             this.cssProvider = null;
         }
         this._display = null;
+        if (this._toplevelsId) {
+            this._toplevels.disconnect(this._toplevelsId);
+            this._toplevelsId = null;
+            this._toplevels = null;
+        }
     }
 
     // Trigger creation and application of auto-theme from background
@@ -421,6 +426,12 @@ class OpenbarPrefs {
 
     fillOpenbarPrefs(window, openbar) {
         // Install cleanup before any fallible initialization, including before realize.
+        // Gtk.Window.destroy() before realize emits neither close-request nor unrealize.
+        this._toplevels = Gtk.Window.get_toplevels();
+        this._toplevelsId = this._toplevels.connect('items-changed', () => {
+            if (!this._toplevels.find(window)[0])
+                this._close();
+        });
         window.connect('close-request', () => { this._close(); return false; });
         window.connect('unrealize', () => this._close());
         try {

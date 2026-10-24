@@ -18,6 +18,8 @@ Sources: [baseline prefs](https://github.com/thattemperature-fork/openbar/blob/f
 
 Limits: no claim of indefinitely surviving preferences subprocesses, physical desktop testing or certification of all GNOME versions. Older coherent runtimes and subsequent areas are recorded below when executed.
 
+Follow-up native edge: destroying a constructed but never-realized window emits neither close-request nor unrealize while widgets are retained. RED `openbar-prefs.XSkJtK`; track native Gtk.Window toplevel model removal, disconnect that owned observer at close; GREEN `openbar-prefs.DY5LRy` on GTK4.22.4. This observer is confined to the owning window's lifetime, not a widget-tree observer.
+
 ## 2. Import/export/reset completion
 
 Root cause: pause was acquired outside exception-safe completion, import used an unreaped child and a fixed 3-second timer, export could fail before its unpause timer and exported its own pause. Closing the final preferences window can end the application before asynchronous cleanup without an application hold. Reset could also steal an active import's pause.
