@@ -8,6 +8,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
 import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import {CheckBox} from 'resource:///org/gnome/shell/ui/checkBox.js';
 import * as Utils from '../openbar@neuromorph/utils.js';
 
 let checks = 0;
@@ -72,6 +74,76 @@ async function tests() {
     const root = new St.BoxLayout({vertical: true, width: 700, height: 500});
     Main.uiGroup.add_child(root);
     try {
+        if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'switches') {
+            for (const mode of ['scoped', 'menu-global', 'accent-global']) {
+                settings.set_boolean('menustyle', mode !== 'accent-global');
+                settings.set_boolean('apply-menu-shell', mode === 'menu-global');
+                settings.set_boolean('apply-accent-shell', mode === 'accent-global');
+                root.set_style_class_name(mode === 'scoped' ? 'openmenu' : '');
+                for (const hc of [false, true]) {
+                    obar._hcSettings.set_boolean('high-contrast', hc);
+                    await Scripting.sleep(200);
+                    reload();
+                    for (const direction of [Clutter.TextDirection.LTR, Clutter.TextDirection.RTL]) {
+                        root.set_text_direction(direction);
+                        const sw = new PopupMenu.Switch(false);
+                        const cb = new CheckBox('Native checkbox');
+                        root.add_child(sw); root.add_child(cb);
+                        for (const a of [sw, cb]) a.set_text_direction(direction);
+                        for (const state of states) {
+                            sw.set_style_pseudo_class(state.replaceAll(':', ' ')); cb.set_style_pseudo_class(state.replaceAll(':', ' '));
+                            equal(sw.get_theme_node().get_background_image(), null, `native switch has no legacy image ${mode} ${state}`);
+                            equal(cb._box.get_theme_node().get_background_image(), null, `native checkbox has no legacy image ${mode} ${state}`);
+                            assert(bg(sw._handle) !== '#00000000', 'native handle retained');
+                            if (state.includes('checked')) {
+                                // Both controls use the same custom accent/state color and alpha.
+                                equal(bg(sw), bg(cb._check), `switch/checkbox palette ${state}`);
+                                assert(bg(sw).startsWith('#e51933') || state.includes('hover') || state.includes('active'), `checked custom accent ${bg(sw)}`);
+                                assert(fg(cb._check) !== '#00000000', 'checked mark visible');
+                            } else {
+                                equal(fg(cb._check), '#00000000', 'unchecked mark hidden');
+                                equal(bg(cb._check), '#00000000', 'unchecked background transparent');
+                            }
+                            if (state.includes('focus')) {
+                                const shadow = cb._box.get_theme_node().get_box_shadow();
+                                assert(shadow && shadow.color.to_string().startsWith('#e51933'), 'focus ring uses custom accent');
+                            }
+                            const before = [bg(sw), bg(cb._check), fg(cb._check)];
+                            obar._intSettings.set_string('accent-color', 'green');
+                            await Scripting.sleep(10);
+                            equal([bg(sw), bg(cb._check), fg(cb._check)], before, 'modern controls independent of native accent');
+                            obar._intSettings.set_string('accent-color', 'blue');
+                        }
+                        sw.destroy(); cb.destroy();
+                    }
+                }
+            }
+            // Exercise legacy CSS in the real St parser using native legacy-shaped actors.
+            // Does not claim a GNOME 45/46 compositor test.
+            obar.gnomeVersion = 45;
+            settings.set_boolean('menustyle', true);
+            settings.set_boolean('apply-menu-shell', false);
+            settings.set_boolean('apply-accent-shell', false);
+            root.set_style_class_name('openmenu');
+            for (const hc of [false, true]) {
+                obar._hcSettings.set_boolean('high-contrast', hc);
+                await Scripting.sleep(200);
+                reload();
+                const legacy = new St.Widget({style_class: 'toggle-switch'});
+                const legacyCheck = new St.Button({style_class: 'check-box'});
+                const bin = new St.Bin();
+                legacyCheck.set_child(bin);
+                root.add_child(legacy); root.add_child(legacyCheck);
+                equal(legacy.get_theme_node().get_background_image()?.get_basename(), hc ? 'toggle-off-hc.svg' : 'toggle-off.svg', 'legacy switch SVG fallback');
+                for (const [state, image] of [['', 'checkbox-off.svg'], ['checked', 'checkbox-on.svg'], ['focus', 'checkbox-off-focused.svg'], ['checked focus', 'checkbox-on-focused.svg']]) {
+                    legacyCheck.set_style_pseudo_class(state);
+                    equal(bin.get_theme_node().get_background_image()?.get_basename(), image, `legacy checkbox ${state}`);
+                }
+                legacy.add_style_pseudo_class('checked');
+                equal(legacy.get_theme_node().get_background_image()?.get_basename(), hc ? 'toggle-on-hc.svg' : 'toggle-on.svg', 'legacy checked switch SVG fallback');
+                legacy.destroy(); legacyCheck.destroy();
+            }
+        }
         if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'quick') {
             for (const globalStyle of [false, true]) {
                 settings.set_boolean('apply-menu-shell', globalStyle);
@@ -95,10 +167,10 @@ async function tests() {
                             // Explicit direction on descendants makes each case independent of the desktop locale.
                             for (const a of [split, split._box, toggle, separator, arrow, single]) a.set_text_direction(direction);
                             for (const state of states) {
-                                split.set_style_pseudo_class(state);
-                                toggle.set_style_pseudo_class(state);
-                                arrow.set_style_pseudo_class(state);
-                                single.set_style_pseudo_class(state);
+                                split.set_style_pseudo_class(state.replaceAll(':', ' '));
+                                toggle.set_style_pseudo_class(state.replaceAll(':', ' '));
+                                arrow.set_style_pseudo_class(state.replaceAll(':', ' '));
+                                single.set_style_pseudo_class(state.replaceAll(':', ' '));
                                 const ltr = direction === Clutter.TextDirection.LTR;
                                 equal(radii(arrow), ltr ? [0, radius, radius, 0] : [radius, 0, 0, radius], `menu radius ${state} hc=${hc}`);
                                 equal(radii(toggle), ltr ? [radius, 0, 0, radius] : [0, radius, radius, 0], `toggle radius ${state}`);

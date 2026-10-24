@@ -1793,6 +1793,64 @@ function getStylesheet(obar, Me) {
         toggleOffSVG = 'toggle-off-hc.svg';
     }
 
+    // Shell 47 replaced SVG switches/checkboxes with native handles/icons.
+    // Share these rules between scoped menus and the global accent option.
+    function controlStyles(scope) {
+        if (obar.gnomeVersion < 47) {
+            return `
+                ${scope} .toggle-switch {
+                    background-image: url(assets/${toggleOffSVG});
+                    background-color: transparent !important;
+                }
+                ${scope} .toggle-switch:checked {
+                    background-image: url(assets/${toggleOnSVG});
+                    background-color: transparent !important;
+                }
+                ${scope} .check-box StBin { background-image: url(assets/checkbox-off.svg); }
+                ${scope} .check-box:checked StBin { background-image: url(assets/checkbox-on.svg); }
+                ${scope} .check-box:focus StBin { background-image: url(assets/checkbox-off-focused.svg); }
+                ${scope} .check-box:focus:checked StBin { background-image: url(assets/checkbox-on-focused.svg); }
+            `;
+        }
+        return `
+            ${scope} .toggle-switch {
+                background-image: none;
+                background-color: rgba(${mfgred},${mfggreen},${mfgblue},${hcMode ? 0.3 : 0.15}) !important;
+                color: rgba(${mfgred},${mfggreen},${mfgblue},1) !important;
+            }
+            ${scope} .toggle-switch:hover {
+                background-color: rgba(${mfgred},${mfggreen},${mfgblue},${hcMode ? 0.4 : 0.2}) !important;
+            }
+            ${scope} .toggle-switch .handle {
+                background-color: rgb(248,247,247);
+            }
+            ${scope} .check-box StBin {
+                background-image: none;
+            }
+            ${scope} .check-box StIcon {
+                color: transparent !important;
+                background-color: transparent !important;
+                border-color: rgba(${mfgred},${mfggreen},${mfgblue},${hcMode ? 0.6 : 0.3});
+            }
+            ${scope} .check-box:hover StIcon, ${scope} .check-box:active StIcon {
+                border-color: rgba(${mfgred},${mfggreen},${mfgblue},${hcMode ? 0.8 : 0.5});
+            }
+            ${scope} .toggle-switch:checked, ${scope} .check-box:checked StIcon {
+                background-color: rgba(${msred},${msgreen},${msblue},${msAlpha}) !important;
+                color: rgba(${amfgred},${amfggreen},${amfgblue},1) !important;
+                border-color: transparent;
+            }
+            ${scope} .toggle-switch:checked:hover, ${scope} .toggle-switch:checked:active,
+            ${scope} .check-box:checked:hover StIcon, ${scope} .check-box:checked:active StIcon {
+                background-color: ${mshg} !important;
+                color: rgba(${amhfgred},${amhfggreen},${amhfgblue},1) !important;
+            }
+            ${scope} .check-box:focus StBin, ${scope} .toggle-switch:focus {
+                box-shadow: inset 0 0 0 2px rgba(${msred},${msgreen},${msblue},0.65);
+            }
+        `;
+    }
+
     // Menu rise(margin) for Bar in Bottom Position
     let bottomBarStyle;
     if(position == 'Bottom') {
@@ -2391,26 +2449,7 @@ function getStylesheet(obar, Me) {
                 box-shadow: inset 0 0 0 2px rgba(${msred},${msgreen},${msblue},0.65) !important;
                 border-color: transparent !important;
             }
-            ${openmenuClass} .toggle-switch {
-                background-image: url(assets/${toggleOffSVG});
-                background-color: transparent !important;
-            }
-            ${openmenuClass} .toggle-switch:checked {
-                background-image: url(assets/${toggleOnSVG});
-                background-color: transparent !important;
-            }
-            ${openmenuClass} .check-box StBin {
-                background-image: url(assets/checkbox-off.svg);
-            }
-            ${openmenuClass} .check-box:checked StBin {
-                background-image: url(assets/checkbox-on.svg);
-            }
-            ${openmenuClass} .check-box:focus StBin {
-                background-image: url(assets/checkbox-off-focused.svg);
-            }
-            ${openmenuClass} .check-box:focus:checked StBin {
-                background-image: url(assets/checkbox-on-focused.svg);
-            }
+            ${controlStyles(openmenuClass)}
 
             ${openmenuClass}.message-list-clear-button {
                 color: rgba(${smfgred},${smfggreen},${smfgblue},${mfgAlpha}) !important;
@@ -2923,26 +2962,7 @@ function getStylesheet(obar, Me) {
         .slider:not(.quick-slider):hover {
             ${sliderHoverStyle}
         }
-        .toggle-switch {
-            background-image: url(assets/${toggleOffSVG});
-            background-color: transparent !important;
-        }
-        .toggle-switch:checked {
-            background-image: url(assets/${toggleOnSVG});
-            background-color: transparent !important;
-        }
-        .check-box StBin {
-            background-image: url(assets/checkbox-off.svg);
-        }
-        .check-box:checked StBin {
-            background-image: url(assets/checkbox-on.svg);
-        }
-        .check-box:focus StBin {
-            background-image: url(assets/checkbox-off-focused.svg);
-        }
-        .check-box:focus:checked StBin {
-            background-image: url(assets/checkbox-on-focused.svg);
-        } `;
+        ${controlStyles('')} `;
     }
 
     if(applyAllShell) {

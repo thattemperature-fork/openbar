@@ -62,3 +62,42 @@ Limitation: a `QuickMenuToggle` whose menu is disabled still has hidden siblings
 so native `:last-child` does not restore its inner corners. Standalone unsplit
 `QuickToggle` is covered; dynamically hidden expansion-button topology is not
 changed by this CSS-only fix. No screenshot/interactive visual claim.
+
+## 8 — Native switches and checkboxes
+
+Sources: tagged [46.0 switches](https://github.com/GNOME/gnome-shell/blob/46.0/data/theme/gnome-shell-sass/widgets/_switches.scss)
+/ [checkboxes](https://github.com/GNOME/gnome-shell/blob/46.0/data/theme/gnome-shell-sass/widgets/_check-box.scss)
+use SVGs. Tagged [47.0 switches](https://github.com/GNOME/gnome-shell/blob/47.0/data/theme/gnome-shell-sass/widgets/_switches.scss)
+/ [checkboxes](https://github.com/GNOME/gnome-shell/blob/47.0/data/theme/gnome-shell-sass/widgets/_check-box.scss)
+introduce `.handle` and `StIcon` styling; same architecture checked in 48.0,
+49.4 and 50.4. Native [49.4 popupMenu.js](https://github.com/GNOME/gnome-shell/blob/49.4/js/ui/popupMenu.js)
+and [checkBox.js](https://github.com/GNOME/gnome-shell/blob/49.4/js/ui/checkBox.js),
+and corresponding 50.4 tags, construct those actual actors. There is no linked
+widget-specific discussion in TODO item 8; #114/#170 discuss adjacent theme
+compatibility but are not claimed as checkbox reproductions.
+
+Root cause/plan: legacy SVG rules remain unconditionally enabled, while the
+native checkbox's accent is painted on an unstyled StIcon, not StBin. Branch
+at Shell 47; preserve legacy SVG rules and HC filenames, share one control CSS
+helper between scoped menu and global accent styling. Retain native handle,
+geometry/status icons/behavior; override custom checked/hover/active/focus
+palette, unchecked outline and HC opacity without duplicate backgrounds.
+
+RED: `widgets-run.sh switches` failed on native switch image (`{} != null`)
+before production edits; `$TMPDIR/openbar-widgets.HuvtkE/shell.log`.
+GREEN: **660 assertions each on 49.4/50.4**, final artifacts
+`$TMPDIR/openbar-widgets.kk6J1a` / `openbar-widgets.JRcHtM`.
+Scoped/global-menu/global-accent modes, LTR/RTL, normal/HC, unchecked/checked,
+hover/focus/active, custom accent vs native accent, retained native handles,
+no duplicate switch/checkbox images and custom focus-ring color are covered.
+Legacy-shaped St actors with generator version 45 assert all checkbox SVG
+states and both switch HC/normal filenames using the actual St parser. This
+is **not** a GNOME 45/46 runtime test or legacy image-pixel comparison.
+
+Harness correction: St pseudo-class lists are space-separated, not colon-
+separated. Compound-state tests were corrected and rerun for item 7: **768**
+assertions pass on each version (`openbar-widgets.dLERMB` 49,
+`openbar-widgets.Vqj78s` 50). Ordinary-menu suite also passed **1319** assertions
+on 49.4 (`openbar-menu-test.6LLPbi`). Existing ordinary-menu compound pseudo
+fixtures use colon-separated strings, so that old suite's compound-state
+coverage should not be overstated; the new widget suite uses correct lists.
