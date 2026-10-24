@@ -50,8 +50,8 @@ export function autoApplyBGPalette(obar, requestMode) {
 
     // dlog('autoApply caller trace ' + autoApplyBGPalette.caller, requestMode);
 
-    // Pause stylesheet reloading, while auto-theme settings are updated, to prevent multiple style reloads
-    obar._settings.set_boolean('pause-reload', true);
+    if(requestMode !== 'dark' && requestMode !== 'light')
+        return;
 
     let themeDark = obar._settings.get_string('autotheme-dark');
     let themeLight = obar._settings.get_string('autotheme-light');
@@ -78,6 +78,10 @@ export function autoApplyBGPalette(obar, requestMode) {
         colorCounts.push(count);
         colorTotal += count;
     }
+    // Empty/invalid populations cannot define palette probabilities.
+    if(!Number.isFinite(colorTotal) || colorTotal <= 0 ||
+        colorCounts.some(count => !Number.isFinite(count) || count < 0))
+        return;
     // Convert colorCounts to percentages
     let colorPercents = colorCounts.map(count => (count/colorTotal)*100);
 
@@ -87,6 +91,10 @@ export function autoApplyBGPalette(obar, requestMode) {
         [r, g, b] = [parseInt(r), parseInt(g), parseInt(b)];
         paletteArr.push([[r, g, b], colorPercents[i-1]]);
     }
+
+    const wasPaused = obar._settings.get_boolean('pause-reload');
+    try {
+    obar._settings.set_boolean('pause-reload', true);
 
     // dlog('paletteArr:', paletteArr);
 
@@ -1038,8 +1046,11 @@ export function autoApplyBGPalette(obar, requestMode) {
 
     // Mark auto-theme is applied for font weight and trigger style reload
     obar._settings.set_boolean('autotheme-font', true);
-    obar._settings.set_boolean('pause-reload', false);
-    triggerStyleReload(obar);
+    } finally {
+        obar._settings.set_boolean('pause-reload', wasPaused);
+    }
+    if(!wasPaused)
+        triggerStyleReload(obar);
 }
 
 export function onModeChange(obar) {
@@ -1047,6 +1058,8 @@ export function onModeChange(obar) {
     if(importExport)
         return;
 
+    const wasPaused = obar._settings.get_boolean('pause-reload');
+    try {
     // Pause stylesheet reloading, while auto-theme settings are updated, to prevent multiple style reloads
     obar._settings.set_boolean('pause-reload', true);
 
@@ -1070,9 +1083,11 @@ export function onModeChange(obar) {
     else
         obar._settings.set_boolean('bg-change', true);
 
-    // Disable pause-reload and trigger style reload
-    obar._settings.set_boolean('pause-reload', false);
-    triggerStyleReload(obar);
+    } finally {
+        obar._settings.set_boolean('pause-reload', wasPaused);
+    }
+    if(!wasPaused)
+        triggerStyleReload(obar);
 }
 
 // Find index of theme accent color that is closest to obar accent color
