@@ -10,7 +10,7 @@ Plan/implementation: retain every explicit settings handler and UI-only timeout,
 
 Regression: `TMPDIR=<scratch> bash tests/prefs-native.sh lifecycle` creates private HOME/XDG/bus/headless Wayland, loads the actual exported preferences resource/module and actual UI, retains native settings and verifies `GObject.signal_handler_is_connected` after destroy. Two independent opens/closes, palette and style timers, provider removal and partial initialization are asserted. The runner appends only a test class export to its disposable source copy; no production algorithms are copied. It requires a post-assertion marker and rejects logged JS errors, not merely exit zero.
 
-RED GTK 4.22.4: `/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.SZddDa`, fails the native handler-disconnection assertion.
+RED GTK 4.22.4: `/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.SZddDa`, fails the native handler-disconnection assertion. Final runner replay against baseline (`OPENBAR_PREFS_SOURCE_REF=ffba24d4391e987fafbdf38fb9abb4fe4a0b91ae bash tests/prefs-native.sh lifecycle`): `openbar-prefs.Uxhiva`, same expected RED with native prototype-level connection capture.
 
 GREEN GTK 4.22.4: `/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.McMUYD`, all lifecycle assertions pass. Known native Gtk.Grid GI slow-path warnings are unrelated; missing services in the isolated Shell are expected.
 
@@ -55,6 +55,8 @@ Final native results (all paths under `/var/lib/hermes/.hermes/cache/scratch/`):
 All have post-assertion success markers; no uncaught preferences exceptions. GTK4.22 at125%: GTK/Flatpak native minimum481/natural664, allocated664, scroll viewport482; controls are fully reachable. Older GTK minimum516/natural724, allocated724, viewport463. Native title/quote/stack-box remain within820px and640px window bounds. No Adwaita allocation-overflow warnings in final layout runs. Limits: not a pixel-aesthetic review, every locale or physical fractional monitor scale. The keyboard-focus scrolling property is enabled but physical input navigation is not certified.
 
 Sources: [GTK Viewport horizontal policy](https://docs.gtk.org/gtk4/property.Scrollable.hscroll-policy.html), [Gtk.Label max-width-chars](https://docs.gtk.org/gtk4/property.Label.max-width-chars.html), [upstream large-text issue98](https://github.com/neuromorph/openbar/issues/98).
+
+Follow-up test-only strengthening: `openbar-prefs.pza8B1` also injects failure at the first color widget after reload/palette handlers and the quote timer are live; all are released. Runner rejects uncaught JS critical/unhandled-promise output as well as absent completion markers. Programmatic layout aggregation confirms26 measurements/13 distinct pages at widths640 and820 in each of the three runtime `layout.json` files; every allocation is at least its native minimum.
 
 ## Preserved baseline regression suites
 

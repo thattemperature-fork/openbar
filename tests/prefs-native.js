@@ -64,6 +64,13 @@ async function lifecycle() {
     assert(failed && !prefs.cssProvider, 'partial initialization releases provider');
     prefs.loadQuotesFromFile = load;
     window.destroy();
+    const late = new OpenbarPrefs();
+    const lateWindow = new Adw.PreferencesWindow();
+    late.createColorWidget = () => {throw Error('late UI initialization failure');};
+    try {late.fillOpenbarPrefs(lateWindow, extension);} catch (_) { /* expected */ }
+    assert(!late.cssProvider && late._uiTimeouts.size === 0 && connections.every(([s, id]) => !GObject.signal_handler_is_connected(s, id)), 'late partial initialization disconnects live handlers and quote timer');
+    lateWindow.destroy();
+    Gio.Settings.prototype.connect = originalConnect;
 }
 async function transactions() {
     const prefs = new OpenbarPrefs();

@@ -17,7 +17,7 @@ export function init() {
             }));
             const output = new TextDecoder().decode(GLib.file_get_contents(`${dir}/gtk.log`)[1]);
             print(output);
-            if (!child.get_successful() || !output.includes('PASS preferences native regression complete') || output.includes('JS ERROR')) throw Error('GTK preferences regression failed');
+            if (!child.get_successful() || !output.includes('PASS preferences native regression complete') || /JS ERROR|JS CRITICAL|Gjs-CRITICAL|Unhandled promise/.test(output)) throw Error('GTK preferences regression failed');
             GLib.file_set_contents(`${dir}/result`, output);
         })().catch(logError).finally(() => global.context.terminate());
         return GLib.SOURCE_REMOVE;
