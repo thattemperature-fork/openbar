@@ -326,12 +326,58 @@ async function layout() {
     GLib.file_set_contents(`${dir}/layout.json`, JSON.stringify(measurements, null, 2));
     window.destroy();
 }
+async function resize() {
+    Gtk.Settings.get_default().gtk_enable_animations = false;
+    const window = new Adw.PreferencesWindow();
+    extension.fillPreferencesWindow(window);
+    const stack = descendants(window).find(w => w instanceof Gtk.Stack && w.get_child_by_name('gtkflatpak'));
+    const scroll = descendants(window).find(w => w.has_css_class('openbar-scroll'));
+    const box = descendants(window).find(w => w.has_css_class('openbar-stack-box'));
+    const rows = [];
+    window.present();
+    await sleep(500);
+    for (const dpi of [96, 120]) {
+        Gtk.Settings.get_default().gtk_xft_dpi = dpi * 1024;
+        for (const width of [640, 820, 1000, 820, 640]) {
+            window.set_default_size(width, 650);
+            // Wait for the actual native top-level size, then let allocation run.
+            for (let i = 0; i < 60 && window.get_width() !== width; i++)
+                await sleep(20);
+            await sleep(100);
+            assert(window.get_width() === width, `resize reaches ${width}px at ${dpi}dpi`);
+            assert(box.get_allocated_width() >= width - 64,
+                `gray settings box uses available window width at ${width}px/${dpi}dpi (got ${box.get_allocated_width()})`);
+            for (let i = 0; i < stack.get_pages().get_n_items(); i++) {
+                const page = stack.get_pages().get_item(i);
+                stack.set_visible_child(page.child);
+                let minimum, available, allocated;
+                for (let frame = 0; frame < 60; frame++) {
+                    await sleep(20);
+                    minimum = stack.measure(Gtk.Orientation.HORIZONTAL, -1)[0];
+                    available = scroll.get_hadjustment().page_size;
+                    allocated = stack.get_allocated_width();
+                    if (Math.abs(allocated - Math.max(minimum, available)) <= 1)
+                        break;
+                }
+                const row = {dpi, width, page: page.name, box: box.get_allocated_width(), minimum, available, allocated,
+                    upper: scroll.get_hadjustment().upper};
+                rows.push(row);
+                assert(Math.abs(allocated - Math.max(minimum, available)) <= 1,
+                    `${page.name} resizes before scrolling at ${width}px/${dpi}dpi (${JSON.stringify(row)})`);
+                assert(row.upper >= allocated - 1, `${page.name} remains reachable below minimum`);
+            }
+        }
+    }
+    GLib.file_set_contents(`${dir}/resize.json`, JSON.stringify(rows, null, 2));
+    window.destroy();
+}
 async function main() {
     await setup();
     print(`GTK ${Gtk.get_major_version()}.${Gtk.get_minor_version()}.${Gtk.get_micro_version()}`);
     settings.set_int('monitor-width', 1024); settings.set_int('monitor-height', 768);
     if (GLib.getenv('OPENBAR_PREFS_MODE').startsWith('service')) await serviceLifetime();
     else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions') await transactions();
+    else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'resize') await resize();
     else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'layout') await layout();
     else await lifecycle();
     print('PASS preferences native regression complete');

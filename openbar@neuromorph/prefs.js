@@ -2912,9 +2912,9 @@ class OpenbarPrefs {
         stack.add_titled(appgrid, 'gtkflatpak',     '⌘   Gtk / Flatpak Apps');
         stack.add_titled(iegrid, 'importexport',    '⧉   Settings Admin');
 
-        // Explicit viewport preserves native control widths on older GTK as well.
+        // Let controls shrink to their real minimum before horizontal scrolling.
         const viewport = new Gtk.Viewport({
-            hscroll_policy: Gtk.ScrollablePolicy.NATURAL,
+            hscroll_policy: Gtk.ScrollablePolicy.MINIMUM,
             scroll_to_focus: true,
         });
         viewport.set_child(stack);
@@ -2938,6 +2938,17 @@ class OpenbarPrefs {
         prefsBox.append(quoteBox);
 
         settingsGroup.add(prefsBox);
+
+        // PreferencesPage's internal clamp suits single-column preference rows,
+        // not our sidebar plus settings pane. Unwrap only this page's clamp;
+        // retain its viewport, groups and native page/window lifecycle.
+        const pageClamp = settingsGroup.get_ancestor(Adw.Clamp.$gtype);
+        const pageViewport = pageClamp?.get_parent();
+        if (pageViewport instanceof Gtk.Viewport) {
+            const content = pageClamp.get_child();
+            pageClamp.set_child(null);
+            pageViewport.set_child(content);
+        }
 
         /////////////////////////////////////////////////////////////////////
 

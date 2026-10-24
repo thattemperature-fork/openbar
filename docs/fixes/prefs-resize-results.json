@@ -1,0 +1,4019 @@
+{
+  "baseline": "65e9523636ba572baa0aae9ec2261468723c43b8",
+  "results": [
+    {
+      "versionSet": "50",
+      "kind": "resize",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.dmoq5m",
+      "assertions": 280,
+      "measurements": [
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 246,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 563,
+          "available": 450,
+          "allocated": 563,
+          "upper": 563
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 350,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 346,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 347,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 475,
+          "available": 450,
+          "allocated": 475,
+          "upper": 475
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 469,
+          "available": 450,
+          "allocated": 469,
+          "upper": 469
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 529,
+          "available": 450,
+          "allocated": 529,
+          "upper": 529
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 289,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 406,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 377,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 407,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 573,
+          "available": 450,
+          "allocated": 573,
+          "upper": 573
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 246,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 563,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 350,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 346,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 347,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 475,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 469,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 529,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 289,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 406,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 377,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 407,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 573,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 246,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 563,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 350,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 346,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 347,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 475,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 469,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 529,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 289,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 406,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 377,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 407,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 573,
+          "available": 810,
+          "allocated": 810,
+          "upper": 810
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 246,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 563,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 350,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 346,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 347,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 475,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 469,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 529,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 289,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 406,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 377,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 407,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 573,
+          "available": 630,
+          "allocated": 630,
+          "upper": 630
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 246,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 563,
+          "available": 450,
+          "allocated": 563,
+          "upper": 563
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 350,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 346,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 347,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 475,
+          "available": 450,
+          "allocated": 475,
+          "upper": 475
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 469,
+          "available": 450,
+          "allocated": 469,
+          "upper": 469
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 529,
+          "available": 450,
+          "allocated": 529,
+          "upper": 529
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 289,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 406,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 377,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 407,
+          "available": 450,
+          "allocated": 450,
+          "upper": 450
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 573,
+          "available": 450,
+          "allocated": 573,
+          "upper": 573
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 291,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 629,
+          "available": 413,
+          "allocated": 629,
+          "upper": 629
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 409,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 404,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 397,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 475,
+          "available": 413,
+          "allocated": 475,
+          "upper": 475
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 570,
+          "available": 413,
+          "allocated": 570,
+          "upper": 570
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 604,
+          "available": 413,
+          "allocated": 604,
+          "upper": 604
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 333,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 478,
+          "available": 413,
+          "allocated": 478,
+          "upper": 478
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 441,
+          "available": 413,
+          "allocated": 441,
+          "upper": 441
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 481,
+          "available": 413,
+          "allocated": 481,
+          "upper": 481
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 667,
+          "available": 413,
+          "allocated": 667,
+          "upper": 667
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 291,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 629,
+          "available": 593,
+          "allocated": 629,
+          "upper": 629
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 409,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 404,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 397,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 475,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 570,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 604,
+          "available": 593,
+          "allocated": 604,
+          "upper": 604
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 333,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 478,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 441,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 481,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 667,
+          "available": 593,
+          "allocated": 667,
+          "upper": 667
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 291,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 629,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 409,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 404,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 397,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 475,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 570,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 604,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 333,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 478,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 441,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 481,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 667,
+          "available": 773,
+          "allocated": 773,
+          "upper": 773
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 291,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 629,
+          "available": 593,
+          "allocated": 629,
+          "upper": 629
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 409,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 404,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 397,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 475,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 570,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 604,
+          "available": 593,
+          "allocated": 604,
+          "upper": 604
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 333,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 478,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 441,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 481,
+          "available": 593,
+          "allocated": 593,
+          "upper": 593
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 667,
+          "available": 593,
+          "allocated": 667,
+          "upper": 667
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 291,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 629,
+          "available": 413,
+          "allocated": 629,
+          "upper": 629
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 409,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 404,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 397,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 475,
+          "available": 413,
+          "allocated": 475,
+          "upper": 475
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 570,
+          "available": 413,
+          "allocated": 570,
+          "upper": 570
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 604,
+          "available": 413,
+          "allocated": 604,
+          "upper": 604
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 333,
+          "available": 413,
+          "allocated": 413,
+          "upper": 413
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 478,
+          "available": 413,
+          "allocated": 478,
+          "upper": 478
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 441,
+          "available": 413,
+          "allocated": 441,
+          "upper": 441
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 481,
+          "available": 413,
+          "allocated": 481,
+          "upper": 481
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 667,
+          "available": 413,
+          "allocated": 667,
+          "upper": 667
+        }
+      ]
+    },
+    {
+      "versionSet": "50",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.XWzoMm",
+      "assertions": 17
+    },
+    {
+      "versionSet": "50",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.fDWRrT",
+      "assertions": 37
+    },
+    {
+      "versionSet": "50",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.CCawpV",
+      "assertions": 26
+    },
+    {
+      "versionSet": "50",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.s1d3f2",
+      "assertions": 12
+    },
+    {
+      "versionSet": "50",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.6bIgPx",
+      "assertions": 12
+    },
+    {
+      "versionSet": "49",
+      "kind": "resize",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.wlvFcR",
+      "assertions": 280,
+      "measurements": [
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 264,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 587,
+          "available": 435,
+          "allocated": 587,
+          "upper": 587
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 374,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 369,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 367,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 435,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 509,
+          "available": 435,
+          "allocated": 509,
+          "upper": 509
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 560,
+          "available": 435,
+          "allocated": 560,
+          "upper": 560
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 307,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 434,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 402,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 436,
+          "available": 435,
+          "allocated": 436,
+          "upper": 436
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 611,
+          "available": 435,
+          "allocated": 611,
+          "upper": 611
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 264,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 587,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 374,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 369,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 367,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 509,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 560,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 307,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 434,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 402,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 436,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 611,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 264,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 587,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 374,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 369,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 367,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 499,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 509,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 560,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 307,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 434,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 402,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 436,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 611,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 264,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 587,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 374,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 369,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 367,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 509,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 560,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 307,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 434,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 402,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 436,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 611,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 264,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 587,
+          "available": 435,
+          "allocated": 587,
+          "upper": 587
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 374,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 369,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 367,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 435,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 509,
+          "available": 435,
+          "allocated": 509,
+          "upper": 509
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 560,
+          "available": 435,
+          "allocated": 560,
+          "upper": 560
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 307,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 434,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 402,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 436,
+          "available": 435,
+          "allocated": 436,
+          "upper": 436
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 611,
+          "available": 435,
+          "allocated": 611,
+          "upper": 611
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 313,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 670,
+          "available": 394,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 438,
+          "available": 394,
+          "allocated": 438,
+          "upper": 438
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 432,
+          "available": 394,
+          "allocated": 432,
+          "upper": 432
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 421,
+          "available": 394,
+          "allocated": 421,
+          "upper": 421
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 394,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 620,
+          "available": 394,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 642,
+          "available": 394,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 355,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 514,
+          "available": 394,
+          "allocated": 514,
+          "upper": 514
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 472,
+          "available": 394,
+          "allocated": 472,
+          "upper": 472
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 516,
+          "available": 394,
+          "allocated": 516,
+          "upper": 516
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 714,
+          "available": 394,
+          "allocated": 714,
+          "upper": 714
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 313,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 670,
+          "available": 574,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 438,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 432,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 421,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 620,
+          "available": 574,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 642,
+          "available": 574,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 355,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 514,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 472,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 516,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 714,
+          "available": 574,
+          "allocated": 714,
+          "upper": 714
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 313,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 670,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 438,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 432,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 421,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 499,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 620,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 642,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 355,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 514,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 472,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 516,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 714,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 313,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 670,
+          "available": 574,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 438,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 432,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 421,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 620,
+          "available": 574,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 642,
+          "available": 574,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 355,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 514,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 472,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 516,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 714,
+          "available": 574,
+          "allocated": 714,
+          "upper": 714
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 313,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 670,
+          "available": 394,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 438,
+          "available": 394,
+          "allocated": 438,
+          "upper": 438
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 432,
+          "available": 394,
+          "allocated": 432,
+          "upper": 432
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 421,
+          "available": 394,
+          "allocated": 421,
+          "upper": 421
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 394,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 620,
+          "available": 394,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 642,
+          "available": 394,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 355,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 514,
+          "available": 394,
+          "allocated": 514,
+          "upper": 514
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 472,
+          "available": 394,
+          "allocated": 472,
+          "upper": 472
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 516,
+          "available": 394,
+          "allocated": 516,
+          "upper": 516
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 714,
+          "available": 394,
+          "allocated": 714,
+          "upper": 714
+        }
+      ]
+    },
+    {
+      "versionSet": "49",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.HiLEDv",
+      "assertions": 17
+    },
+    {
+      "versionSet": "49",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.vg4d7s",
+      "assertions": 37
+    },
+    {
+      "versionSet": "49",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.knA147",
+      "assertions": 26
+    },
+    {
+      "versionSet": "49",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.up9iiJ",
+      "assertions": 12
+    },
+    {
+      "versionSet": "49",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.eieCf8",
+      "assertions": 12
+    },
+    {
+      "versionSet": "48",
+      "kind": "resize",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.r1Jq9a",
+      "assertions": 280,
+      "measurements": [
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 264,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 559,
+          "available": 435,
+          "allocated": 559,
+          "upper": 559
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 374,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 369,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 367,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 435,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 509,
+          "available": 435,
+          "allocated": 509,
+          "upper": 509
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 560,
+          "available": 435,
+          "allocated": 560,
+          "upper": 560
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 307,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 434,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 402,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 436,
+          "available": 435,
+          "allocated": 436,
+          "upper": 436
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 597,
+          "available": 435,
+          "allocated": 597,
+          "upper": 597
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 264,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 559,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 374,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 369,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 367,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 509,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 560,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 307,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 434,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 402,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 436,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 597,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 264,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 559,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 374,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 369,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 367,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 499,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 509,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 560,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 307,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 434,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 402,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 436,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 597,
+          "available": 795,
+          "allocated": 795,
+          "upper": 795
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 264,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 559,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 374,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 369,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 367,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 509,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 560,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 307,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 434,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 402,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 436,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 597,
+          "available": 615,
+          "allocated": 615,
+          "upper": 615
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 264,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 559,
+          "available": 435,
+          "allocated": 559,
+          "upper": 559
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 374,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 369,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 367,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 435,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 509,
+          "available": 435,
+          "allocated": 509,
+          "upper": 509
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 560,
+          "available": 435,
+          "allocated": 560,
+          "upper": 560
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 307,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 434,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 402,
+          "available": 435,
+          "allocated": 435,
+          "upper": 435
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 436,
+          "available": 435,
+          "allocated": 436,
+          "upper": 436
+        },
+        {
+          "dpi": 96,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 597,
+          "available": 435,
+          "allocated": 597,
+          "upper": 597
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 313,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 670,
+          "available": 394,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 438,
+          "available": 394,
+          "allocated": 438,
+          "upper": 438
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 432,
+          "available": 394,
+          "allocated": 432,
+          "upper": 432
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 421,
+          "available": 394,
+          "allocated": 421,
+          "upper": 421
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 394,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 620,
+          "available": 394,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 642,
+          "available": 394,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 355,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 514,
+          "available": 394,
+          "allocated": 514,
+          "upper": 514
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 472,
+          "available": 394,
+          "allocated": 472,
+          "upper": 472
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 516,
+          "available": 394,
+          "allocated": 516,
+          "upper": 516
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 700,
+          "available": 394,
+          "allocated": 700,
+          "upper": 700
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 313,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 670,
+          "available": 574,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 438,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 432,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 421,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 620,
+          "available": 574,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 642,
+          "available": 574,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 355,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 514,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 472,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 516,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 700,
+          "available": 574,
+          "allocated": 700,
+          "upper": 700
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "welcome",
+          "box": 1000,
+          "minimum": 313,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "autotheme",
+          "box": 1000,
+          "minimum": 670,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barprops",
+          "box": 1000,
+          "minimum": 438,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "wmaxbar",
+          "box": 1000,
+          "minimum": 432,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barfg",
+          "box": 1000,
+          "minimum": 421,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barbg",
+          "box": 1000,
+          "minimum": 499,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "highlights",
+          "box": 1000,
+          "minimum": 620,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "barborder",
+          "box": 1000,
+          "minimum": 642,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "menu",
+          "box": 1000,
+          "minimum": 355,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "dashdock",
+          "box": 1000,
+          "minimum": 514,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "shell",
+          "box": 1000,
+          "minimum": 472,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "gtkflatpak",
+          "box": 1000,
+          "minimum": 516,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 1000,
+          "page": "importexport",
+          "box": 1000,
+          "minimum": 700,
+          "available": 754,
+          "allocated": 754,
+          "upper": 754
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "welcome",
+          "box": 820,
+          "minimum": 313,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "autotheme",
+          "box": 820,
+          "minimum": 670,
+          "available": 574,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barprops",
+          "box": 820,
+          "minimum": 438,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "wmaxbar",
+          "box": 820,
+          "minimum": 432,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barfg",
+          "box": 820,
+          "minimum": 421,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barbg",
+          "box": 820,
+          "minimum": 499,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "highlights",
+          "box": 820,
+          "minimum": 620,
+          "available": 574,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "barborder",
+          "box": 820,
+          "minimum": 642,
+          "available": 574,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "menu",
+          "box": 820,
+          "minimum": 355,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "dashdock",
+          "box": 820,
+          "minimum": 514,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "shell",
+          "box": 820,
+          "minimum": 472,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "gtkflatpak",
+          "box": 820,
+          "minimum": 516,
+          "available": 574,
+          "allocated": 574,
+          "upper": 574
+        },
+        {
+          "dpi": 120,
+          "width": 820,
+          "page": "importexport",
+          "box": 820,
+          "minimum": 700,
+          "available": 574,
+          "allocated": 700,
+          "upper": 700
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "welcome",
+          "box": 640,
+          "minimum": 313,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "autotheme",
+          "box": 640,
+          "minimum": 670,
+          "available": 394,
+          "allocated": 670,
+          "upper": 670
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barprops",
+          "box": 640,
+          "minimum": 438,
+          "available": 394,
+          "allocated": 438,
+          "upper": 438
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "wmaxbar",
+          "box": 640,
+          "minimum": 432,
+          "available": 394,
+          "allocated": 432,
+          "upper": 432
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barfg",
+          "box": 640,
+          "minimum": 421,
+          "available": 394,
+          "allocated": 421,
+          "upper": 421
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barbg",
+          "box": 640,
+          "minimum": 499,
+          "available": 394,
+          "allocated": 499,
+          "upper": 499
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "highlights",
+          "box": 640,
+          "minimum": 620,
+          "available": 394,
+          "allocated": 620,
+          "upper": 620
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "barborder",
+          "box": 640,
+          "minimum": 642,
+          "available": 394,
+          "allocated": 642,
+          "upper": 642
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "menu",
+          "box": 640,
+          "minimum": 355,
+          "available": 394,
+          "allocated": 394,
+          "upper": 394
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "dashdock",
+          "box": 640,
+          "minimum": 514,
+          "available": 394,
+          "allocated": 514,
+          "upper": 514
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "shell",
+          "box": 640,
+          "minimum": 472,
+          "available": 394,
+          "allocated": 472,
+          "upper": 472
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "gtkflatpak",
+          "box": 640,
+          "minimum": 516,
+          "available": 394,
+          "allocated": 516,
+          "upper": 516
+        },
+        {
+          "dpi": 120,
+          "width": 640,
+          "page": "importexport",
+          "box": 640,
+          "minimum": 700,
+          "available": 394,
+          "allocated": 700,
+          "upper": 700
+        }
+      ]
+    },
+    {
+      "versionSet": "48",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.1H0S8v",
+      "assertions": 17
+    },
+    {
+      "versionSet": "48",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.ZgUxYE",
+      "assertions": 37
+    },
+    {
+      "versionSet": "48",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.B8yrE7",
+      "assertions": 26
+    },
+    {
+      "versionSet": "48",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.ZFZtsK",
+      "assertions": 12
+    },
+    {
+      "versionSet": "48",
+      "kind": "existing",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.oAIgLa",
+      "assertions": 12
+    }
+  ]
+}
