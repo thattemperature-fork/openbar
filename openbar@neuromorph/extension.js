@@ -551,14 +551,13 @@ export default class Openbar extends Extension {
                     if(btn.child instanceof PanelMenu.Button) {
                         if(add && this._connections && !this._menuStyleButtons.has(btn.child)) {
                             this._connections.connect(btn.child, 'menu-set', () => {
-                                this.applyMenuStyles(panel, true, btn.child);
+                                this.applyMenuStyles(panel,
+                                    !this.disabling && !!this._settings?.get_boolean('menustyle'), btn.child);
                             });
                             this._menuStyleButtons.add(btn.child);
                         }
-                        else if(!add) {
-                            this._connections?.disconnect(btn.child, 'menu-set');
-                            this._menuStyleButtons.delete(btn.child);
-                        }
+                        // Keep this owned hook until disable; disconnect(button,
+                        // 'menu-set') would also delete the independent QSAP hook.
                     }
 
                     // box pointer case, to update -arrow-rise for bottom panel
@@ -948,18 +947,69 @@ export default class Openbar extends Extension {
         this.setPanelStyle(null, key);
     }
 
-    // QSAP: listen for addition of new panels
-    // this allows theming QSAP panels when QSAP is enabled after Open Bar
+    // QSAP replaces menu on the same emitter. Own this graph separately from
+    // native menu styling: toggling menustyle must not remove its menu-set hook.
     setupLibpanel(obj, signal, sig_param, menu) {
-        if(menu.constructor.name != 'PanelGrid')
+        menu = this.disabling ? null : (obj ? obj.menu : menu);
+        const grid = menu?.constructor.name === 'PanelGrid' ? menu : null;
+        if(this._libpanelMenu !== grid || this._libpanelOwner !== this._connections) {
+            this._libpanelConnections?.disconnectAll();
+            for(const panel of this._libpanelPanels ?? [])
+                this.applyBoxStyles(panel, false);
+            this._libpanelMenu = grid;
+            this._libpanelOwner = this._connections;
+            this._libpanelColumns = new Set();
+            this._libpanelPanels = new Set();
+            this._libpanelConnections = new ConnectManager();
+            if(grid) {
+                const refresh = () => {
+                    this.setupLibpanel(obj, 'panels-changed', null, grid);
+                };
+                this._libpanelConnections.connect(grid.box, this.addedSignal, refresh);
+                this._libpanelConnections.connect(grid.box, this.removedSignal, refresh);
+                this._libpanelConnections.connect(grid.box, 'destroy', () => {
+                    this.setupLibpanel(null, 'destroy', null, null);
+                });
+                this._libpanelRefresh = refresh;
+            }
+        }
+        if(!grid)
             return;
 
-        for(const panelColumn of menu.box.get_children()) {
-            this._connections.connect(panelColumn, this.addedSignal, this.updatePanelStyle.bind(this));
+        const columns = new Set(grid.box.get_children());
+        for(const column of this._libpanelColumns) {
+            if(!columns.has(column)) {
+                this._libpanelConnections.disconnect(column, this.addedSignal);
+                this._libpanelConnections.disconnect(column, this.removedSignal);
+                this._libpanelConnections.disconnect(column, 'destroy');
+            }
         }
-        this._connections.connect(menu.box, this.addedSignal, (obj, signal, panelColumn, callbk_param) => {
-            this._connections.connect(panelColumn, this.addedSignal, this.updatePanelStyle.bind(this));
-        });
+        for(const column of columns) {
+            if(!this._libpanelColumns.has(column)) {
+                this._libpanelConnections.connect(column, this.addedSignal, this._libpanelRefresh);
+                this._libpanelConnections.connect(column, this.removedSignal, this._libpanelRefresh);
+                this._libpanelConnections.connect(column, 'destroy', () => {
+                    this._libpanelColumns.delete(column);
+                });
+            }
+        }
+        this._libpanelColumns = columns;
+        const panels = new Set(grid._get_panels());
+        for(const panel of this._libpanelPanels) {
+            if(!panels.has(panel)) {
+                this._libpanelConnections.disconnect(panel, 'destroy');
+                this.applyBoxStyles(panel, false);
+            }
+        }
+        for(const panel of panels) {
+            if(!this._libpanelPanels.has(panel)) {
+                this._libpanelConnections.connect(panel, 'destroy', () => {
+                    this._libpanelPanels.delete(panel);
+                });
+            }
+            this.applyBoxStyles(panel, this._settings.get_boolean('menustyle'));
+        }
+        this._libpanelPanels = panels;
     }
 
     // Find the monitor which has the panel/panelBox
@@ -1616,7 +1666,7 @@ export default class Openbar extends Extension {
         // Connection specific to QSAP extension (Quick Settings)
         if(this.gnomeVersion > 42) {
             let qSettings = Main.panel.statusArea.quickSettings;
-            connections.push( [qSettings, 'menu-set', this.setupLibpanel.bind(this), qSettings.menu] );
+            connections.push( [qSettings, 'menu-set', this.setupLibpanel.bind(this)] );
         }
         // Connection specific to Workspace indicator dots
         if(this.gnomeVersion > 44) {
@@ -1629,7 +1679,7 @@ export default class Openbar extends Extension {
 
         // Setup connections for addition of new QSAP extension panels
         if(this.gnomeVersion > 42)
-            this.setupLibpanel(null, 'enabled', null, Main.panel.statusArea.quickSettings.menu);
+            this.setupLibpanel(Main.panel.statusArea.quickSettings, 'enabled');
 
         // Connect to background manager (give time for it to be available)
         this._queueTimeout('bgMgrTimeOutId', () => {
@@ -1715,6 +1765,12 @@ export default class Openbar extends Extension {
 
         this.disableFittsWidgets();
 
+        // Release the independent QSAP graph, including surviving off-panel roots.
+        this.setupLibpanel(null, 'disabled');
+        this._libpanelConnections?.disconnectAll();
+        this._libpanelConnections = null;
+        this._libpanelOwner = null;
+        this._libpanelRefresh = null;
         this._connections?.disconnectAll();
         this._connections = null;
         this._primaryBGManager = null;
