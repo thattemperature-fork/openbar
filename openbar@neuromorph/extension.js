@@ -427,14 +427,31 @@ export default class Openbar extends Extension {
     }
 
     loadStylesheet() {
+        // Generation, reloadstyle, startup and Overview converge here. Read live
+        // policy at the native load boundary, not a delayed reset flag.
+        if(!this._settings || this.disabling)
+            return false;
+        if(this._fullscreenStyleBlocked()) {
+            this.unloadStylesheet();
+            this.isObarReset = true;
+            return false;
+        }
         const theme = this.themeContext.get_theme();
         const stylesheet = this.obarRunDir.get_child('stylesheet.css');
         try {
             theme.load_stylesheet(stylesheet);
+            this.isObarReset = false;
+            return true;
         }
         catch (e) {
             console.log('Openbar: Error loading stylesheet: ', e);
+            return false;
         }
+    }
+
+    _fullscreenStyleBlocked() {
+        return !this._settings.get_boolean('set-fullscreen') &&
+            !!this.getPanelMonitor()[0]?.inFullscreen;
     }
 
     reloadStylesheet() {
@@ -803,7 +820,6 @@ export default class Openbar extends Extension {
             if(setOverview) {
                 if(this.isObarReset) { // Overview style is enabled but obar was reset due to Fullscreen
                     this.loadStylesheet();
-                    this.isObarReset = false;
                 }
             }
         }
@@ -817,7 +833,6 @@ export default class Openbar extends Extension {
             const fullscreen = this._settings.get_boolean('set-fullscreen');
             if(fullscreen && this.isObarReset) {
                 this.loadStylesheet();
-                this.isObarReset = false;
             }
             else if(!fullscreen && !this.isObarReset) {
                 this.onFullScreen(null, 'fullscreen');
@@ -1126,27 +1141,15 @@ export default class Openbar extends Extension {
             this._timeouts?.delete('onFullScrTimeoutId');
             this.onFullScrTimeoutId = null;
         }
-        if(!this._settings || this.disabling || this._settings.get_boolean('set-fullscreen'))
+        if(!this._settings || this.disabling)
             return;
 
         // Timeout to allow other extensions to move panel to another monitor
         this._queueTimeout('onFullScrTimeoutId', () => {
-            // Check if panelBox is on the monitor which is in fullscreen
-            const LM = Main.layoutManager;
-            let panelBoxMonitor = this.getPanelMonitor()[0];
-            let panelFullMonFound = false;
-            for(const monitor of LM.monitors) {
-                if(monitor.inFullscreen && monitor == panelBoxMonitor) {
-                    this.unloadStylesheet();
-                    this.isObarReset = true;
-                    panelFullMonFound = true;
-                    break;
-                }
-            }
-            if(!panelFullMonFound && this.isObarReset) {
+            // Re-evaluate both policy and monitor after the delay. The load
+            // boundary also owns isObarReset, so failed/blocked loads retain it.
+            if(this._fullscreenStyleBlocked() || this.isObarReset)
                 this.loadStylesheet();
-                this.isObarReset = false;
-            }
         }, timeout);
     }
 
