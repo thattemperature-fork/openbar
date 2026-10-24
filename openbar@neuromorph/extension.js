@@ -421,6 +421,13 @@ export default class Openbar extends Extension {
     // Add/Remove openmenu class to Notifications and Media message lists
     // as well as to any other lists added by other extensions
     applySectionStyles(list, add) {
+        // Since GNOME 48 the scroll child is a MessageView, not a section list.
+        // Scope its descendants in CSS: groups and their messages are created,
+        // reordered and expanded dynamically, without needing actor observers.
+        if(list.has_style_class_name?.('message-view')) {
+            this.applyMenuClass(list, add);
+            return;
+        }
         list.get_children().forEach((section, idx) => {
             let msgList = section._list;
             if(add && !this.msgListIds[idx]) {
@@ -487,15 +494,14 @@ export default class Openbar extends Extension {
                         this.applyMenuClass(placeholder, add);
                         const msgbox = msgList.get_child_at_index(1);
                         const msgScroll = msgbox.get_child_at_index(0);
-                        const sectionList = msgScroll.child;
-                        if(add) {
+                        const sectionList = msgList._messageView ?? msgScroll.child;
+                        if(!msgList._messageView && add) {
                             this._connections.disconnect(sectionList, this.addedSignal);
-                            this._connections.connect(sectionList, this.addedSignal, (container, actor) => {
-                                // console.log('section added: ', actor.constructor.name);
-                                this.applySectionStyles(sectionList, add);
+                            this._connections.connect(sectionList, this.addedSignal, () => {
+                                this.applySectionStyles(sectionList, true);
                             });
                         }
-                        else
+                        else if(!msgList._messageView)
                             this._connections?.disconnect(sectionList, this.addedSignal);
                         this.applySectionStyles(sectionList, add);
 

@@ -2371,8 +2371,9 @@ function getStylesheet(obar, Me) {
         }
         stylesheet += popupMenuStyles;
 
-        // rgba(${mhred},${mhgreen},${mhblue},${mhAlpha})
-        stylesheet += `
+        // Retain the per-message rules for older Shell, and scope the same
+        // palette to the modern MessageView so late groups/messages/media match.
+        let messageStyles = `
             ${openmenuClass}.datemenu-popover {
                 border-radius: ${menuRadius}px !important;
                 padding-bottom: ${5 + 0.08*menuRadius}px !important;
@@ -2435,10 +2436,34 @@ function getStylesheet(obar, Me) {
             ${openmenuClass}.message .message-media-control:insensitive {
                 color: rgba(${smfgred},${smfggreen},${smfgblue},${mfgAlpha*0.5}) !important;
             }
+            ${openmenuClass}.message-view .message-group-title,
+            ${openmenuClass}.message-view .message-collapse-button {
+                color: rgba(${smfgred},${smfggreen},${smfgblue},${mfgAlpha}) !important;
+            }
+            ${openmenuClass}.message-view .message-collapse-button {
+                background-color: ${smbg} !important;
+            }
+            ${openmenuClass}.message-view .message-collapse-button:hover,
+            ${openmenuClass}.message-view .message-collapse-button:focus {
+                color: rgba(${mfgred},${mfggreen},${mfgblue},1) !important;
+                background-color: rgba(${mbgred},${mbggreen},${mbgblue},${mbgAlpha}) !important;
+            }
+            ${openmenuClass}.message.media-message .message-icon.message-themed-icon,
             ${openmenuClass}.message .media-message-cover-icon .fallback {
                 color: rgba(${smfgred},${smfggreen},${smfgblue},${mfgAlpha}) !important;
                 background-color: rgba(${mbgred},${mbggreen},${mbgblue},${mbgAlpha}) !important;
             }
+        `;
+        if(openmenuClass) {
+            messageStyles = messageStyles.replace(/([^{}]+)\{/g, (rule, selectors) => {
+                const descendants = selectors.split(',').map(selector => selector.trim())
+                    .filter(selector => /^\.openmenu\.message(?=[\s:.]|$)/.test(selector))
+                    .map(selector => selector.replace('.openmenu', '.openmenu.message-view '));
+                return descendants.length ? `${selectors}, ${descendants.join(', ')} {` : rule;
+            });
+        }
+        stylesheet += messageStyles;
+        stylesheet += `
             ${openmenuClass}.dnd-button {
                 border-color: transparent !important;
                 border-radius: 50px;
