@@ -747,6 +747,18 @@ class OpenbarPrefs {
 
         rowbar += 1;
 
+        const preserveWmaxLabel = new Gtk.Label({
+            label: _('Preserve custom WindowMax background'),
+            halign: Gtk.Align.START,
+            wrap: true,
+        });
+        palettegrid.attach(preserveWmaxLabel, 1, rowbar, 1, 1);
+        const preserveWmaxSwitch = this.createSwitchWidget('autotheme-preserve-wmax',
+            _('Keep custom light/dark WindowMax background colors during automatic and manual auto-theme generation. Other theme colors still update. Turn off headerbar matching to display the custom color.'));
+        palettegrid.attach(preserveWmaxSwitch, 2, rowbar, 1, 1);
+
+        rowbar += 1;
+
         let autoAlphaSetLabel = new Gtk.Label({
             label: `<span>Auto-Set Bar, Margins and Islands BG Alpha</span>`,
             use_markup: true,

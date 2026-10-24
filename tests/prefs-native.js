@@ -29,6 +29,18 @@ async function lifecycle() {
         const prefs = new OpenbarPrefs();
         const window = new Adw.PreferencesWindow();
         prefs.fillOpenbarPrefs(window, extension);
+        const preserveLabel = descendants(window).find(widget =>
+            widget instanceof Gtk.Label && widget.get_label() === 'Preserve custom WindowMax background');
+        assert(!!preserveLabel, 'custom WindowMax preservation option is exposed in preferences');
+        const preserveGrid = preserveLabel.get_parent();
+        const [column, row] = preserveGrid.query_child(preserveLabel);
+        const preserveSwitch = preserveGrid.get_child_at(column + 1, row);
+        settings.set_boolean('autotheme-preserve-wmax', true);
+        assert(preserveSwitch instanceof Gtk.Switch && preserveSwitch.active,
+            'custom WindowMax option reflects its schema setting');
+        preserveSwitch.active = false;
+        assert(!settings.get_boolean('autotheme-preserve-wmax'),
+            'custom WindowMax preference updates its schema setting');
         window.present(); await sleep(100);
         let paletteCalls = 0;
         prefs.updatePalette = () => paletteCalls++;
@@ -207,9 +219,18 @@ async function layout() {
         assert(window.get_width() <= width, `preferences can shrink to ${width}px`);
         for (let i = 0; i < stack.get_pages().get_n_items(); i++) {
             const page = stack.get_pages().get_item(i);
-            stack.set_visible_child(page.child); await sleep(35);
-            const minimum = stack.measure(Gtk.Orientation.HORIZONTAL, -1)[0];
-            const adjustment = scroll.get_hadjustment();
+            stack.set_visible_child(page.child);
+            // Wait for native size allocation, not one arbitrary 35ms frame.
+            // Multiple isolated compositors may be running during integration.
+            let minimum, adjustment;
+            for (let frame = 0; frame < 60; frame++) {
+                await sleep(20);
+                minimum = stack.measure(Gtk.Orientation.HORIZONTAL, -1)[0];
+                adjustment = scroll.get_hadjustment();
+                if (stack.get_allocated_width() >= minimum &&
+                    adjustment.upper >= stack.get_allocated_width() - 1)
+                    break;
+            }
             measurements.push({width: window.get_width(), page: page.name, allocated: stack.get_allocated_width(), minimum, upper: adjustment.upper, viewport: adjustment.page_size});
             assert(stack.get_allocated_width() >= minimum && adjustment.upper >= stack.get_allocated_width() - 1, `native ${page.name} controls reachable at ${width}px`);
         }
