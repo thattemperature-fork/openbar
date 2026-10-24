@@ -67,6 +67,62 @@ async function test() {
         obar.enable(); await obar._runtimeAssetsReady; await Scripting.sleep(1200);
         for (const actor of indicators)
             equal(obar._connections.connections.filter(c => c.obj === actor && c.sig === 'notify::visible').length, 1, 're-enable has no duplicate observers');
+    } else if (group === 'trilands') {
+        settings.set_string('bartype', 'Trilands');
+        settings.set_double('bradius', 14);
+        settings.set_boolean('set-overview', true);
+        assert(await sheets.reloadStyle(obar, obar), 'generated Trilands stylesheet');
+        const box = new St.BoxLayout();
+        Main.panel.add_child(box);
+        const buttons = [0, 1, 2].map(i => new PanelMenu.Button(0, `round2-${i}`));
+        const bins = buttons.map(button => button.container);
+        const unrelated = new St.Widget();
+        box.add_child(unrelated);
+        for (const bin of bins) box.add_child(bin);
+        const originalOrder = box.get_children();
+        const realBoxes = obar.panelBoxes;
+        obar.panelBoxes = [box];
+        try {
+            for (const direction of [Clutter.TextDirection.LTR, Clutter.TextDirection.RTL]) {
+                box.set_text_direction(direction);
+                for (const visible of [[false, false, true], [true, false, false], [false, true, false],
+                    [true, false, true], [true, true, true], [false, false, false], [false, true, false]]) {
+                    buttons.forEach((button, i) => button.visible = visible[i]);
+                    obar.setPanelStyle(null, 'notify::visible');
+                    await Scripting.sleep(50);
+                    assert(box.get_children().every((actor, i) => actor === originalOrder[i]), 'Trilands never reorders unrelated/hidden actors');
+                    const shown = buttons.filter(button => button.visible);
+                    const physical = direction === Clutter.TextDirection.RTL ? [...shown].reverse() : shown;
+                    for (const button of shown) {
+                        const left = button === physical[0] ? 14 : 0;
+                        const right = button === physical.at(-1) ? 14 : 0;
+                        equal(radii(button), [left, right, right, left], `native endpoint radii ${direction}/${visible}`);
+                    }
+                }
+                // Once registered, visibility changes alone must refresh endpoints.
+                buttons[0].hide(); buttons[1].show(); buttons[2].hide();
+                equal(radii(buttons[1]), [14, 14, 14, 14], 'sole visible after signal-only hide/show');
+                buttons[0].show();
+                equal(radii(buttons[1]), direction === Clutter.TextDirection.RTL ? [14, 0, 0, 14] : [0, 14, 14, 0], 'hidden sibling show refreshes endpoints');
+            }
+            settings.set_string('bartype', 'Floating');
+            obar.setPanelStyle(null, 'bartype');
+            assert(bins.every(bin => !bin.get_style_pseudo_class()?.includes('trilands-')), 'switching type removes owned endpoint pseudo classes');
+            settings.set_string('bartype', 'Trilands');
+            obar.setPanelStyle(null, 'bartype');
+            const ids = obar._connections.connections.filter(c => buttons.includes(c.obj));
+            obar.disable(); await obar._styleCleanup;
+            assert(ids.every(c => !GObject.signal_handler_is_connected(c.obj, c.id)), 'disable disconnects late panel visibility handlers');
+            assert(bins.every(bin => !bin.get_style_pseudo_class()?.includes('trilands-')), 'disable removes owned endpoint pseudo classes');
+            obar.panelBoxes = realBoxes;
+            obar.enable(); await obar._runtimeAssetsReady;
+        } finally {
+            obar.panelBoxes = realBoxes;
+            if (!obar.disabling) { obar.disable(); await obar._styleCleanup; }
+            buttons.forEach(button => button.destroy());
+            box.destroy();
+            obar.enable(); await obar._runtimeAssetsReady;
+        }
     } else {
         throw Error(`unimplemented test group ${group}`);
     }

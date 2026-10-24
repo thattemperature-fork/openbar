@@ -19,6 +19,12 @@ Assign container class even while hidden. Core style pass owns a single visibili
 RED: Shell50.4 `round2-panel-run.sh visibility` failed at `first native show has container styling without Overview`, artifact `openbar-round2-panel-visibility.Rf3LJa`.
 GREEN: same command, **17 assertions**, artifact `openbar-round2-panel-visibility.Vbk1PD`. Actual native recording and sharing actors show without capture; allocation unchanged by subsequent real Overview; exact visibility signal IDs disconnected on disable; re-enable single ownership verified.
 
+## Trilands visible endpoints
+
+Replace physical sibling CSS selectors with owned `trilands-left` / `trilands-right` container pseudo classes. Set endpoints from visible native buttons, swapping physical sides in RTL, without any child reordering. Zero/one/many visible cases are explicit; hide/show uses the independent core visibility observers. Type changes and disable remove owned pseudo classes. This necessarily changes the three Trilands CSS selectors in addition to `setPanelStyle` and a narrow disable cleanup loop; no other style generation changed in this group.
+
+RED Shell50.4: `openbar-round2-panel-trilands.74jBs4`, sole visible radii `[0,14,14,0]` versus required `[14,14,14,14]`. GREEN: `openbar-round2-panel-trilands.9j0tMj`, **42 assertions** including LTR/RTL, hidden siblings, unchanged actor identities/order, zero/one/many, signal-only show/hide, type and lifecycle cleanup. The initial failing fixture teardown was tightened to disable before destroying its temporary actors; production endpoint failure preceded teardown.
+
 ## Reproduction command
 
 With coherent Shell/typelibs/Mesa from a single Nix ref (see existing native testing docs), run:

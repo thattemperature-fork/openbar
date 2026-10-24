@@ -656,10 +656,21 @@ export default class Openbar extends Extension {
         else
             panel.remove_style_class_name('trilands');
 
-        let i = 0, idx, isFirst, firstIdx, lastIdx;
+        let i = 0;
         for(const box of this.panelBoxes) {
-            isFirst = true; idx = 0; firstIdx = 0; lastIdx = 0;
+            const visible = [...box].filter(btn =>
+                (btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) && btn.child.visible);
+            const rtl = box.get_text_direction() === Clutter.TextDirection.RTL;
+            const left = rtl ? visible.at(-1) : visible[0];
+            const right = rtl ? visible[0] : visible.at(-1);
             for(const btn of box) {
+                for(const edge of ['left', 'right']) {
+                    const name = `trilands-${edge}`;
+                    if(bartype === 'Trilands' && btn === (edge === 'left' ? left : right))
+                        btn.add_style_pseudo_class(name);
+                    else
+                        btn.remove_style_pseudo_class(name);
+                }
                 // Screen recording/share indicators use ButtonBox instead of Button
                 if(btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) {
                     // Hidden native recording/sharing actors must be ready on their
@@ -669,14 +680,6 @@ export default class Openbar extends Extension {
                         c.obj === btn.child && c.sig === 'notify::visible'))
                         this._connections.connect(btn.child, 'notify::visible', this.setPanelStyle.bind(this));
                     if(btn.child.visible) {
-                        if(isFirst) {
-                            firstIdx = idx;
-                            isFirst = false;
-                        }
-                        lastIdx = idx;
-                        // console.log('Visible Child: ', String(btn.child));
-                        btn.add_style_class_name('button-container');
-
                         // Add candybar classes if enabled else remove them
                         if(key == 'enabled' || key == 'candybar' || key == 'showing' || key == 'hiding' || key == 'overview'
                             || key == 'notify::visible' || key == this.addedSignal || key == this.removedSignal) {
@@ -699,45 +702,7 @@ export default class Openbar extends Extension {
                         }
                     }
                 }
-
-                idx++;
             }
-
-            // Add trilands pseudo-classes if enabled else remove them
-            let btns = box.get_children();
-            if(bartype == 'Trilands') {
-                for(let k=0; k<btns.length; k++) {
-                    if(btns[k].child instanceof PanelMenu.Button || btns[k].child instanceof PanelMenu.ButtonBox) {
-                        if(k == firstIdx && k != lastIdx)
-                            box.set_child_at_index(btns[k], 0);
-                        else if(k == lastIdx && k != firstIdx)
-                            box.set_child_at_index(btns[k], btns.length-1);
-                    }
-                }
-            }
-            // for(let k=0; k<btns.length; k++) {
-            //     if(btns[k].child instanceof PanelMenu.Button || btns[k].child instanceof PanelMenu.ButtonBox) {
-            //         // ['one-child', 'left-child', 'right-child', 'mid-child'].forEach(cls => {
-            //             // btns[k].child.remove_style_pseudo_class(cls);
-            //         // });
-            //         btns[k].child.style = ``;
-            //         if(bartype == 'Trilands') {
-            //             let borderRadius = this._settings.get_double('bradius');
-            //             if(k == firstIdx && k == lastIdx)
-            //                 btns[k].child.style = ` border-radius: ${borderRadius}px ${borderRadius}px ${borderRadius}px ${borderRadius}px !important; `;
-            //                 // btns[k].child.add_style_pseudo_class('one-child');
-            //             else if(k == firstIdx)
-            //                 btns[k].child.style = ` border-radius: ${borderRadius}px 0px 0px ${borderRadius}px !important; `;
-            //                 // btns[k].child.add_style_pseudo_class('left-child');
-            //             else if(k == lastIdx)
-            //                 btns[k].child.style = ` border-radius: 0px ${borderRadius}px ${borderRadius}px 0px !important; `;
-            //                 // btns[k].child.add_style_pseudo_class('right-child');
-            //             else
-            //                 btns[k].child.style = ` border-radius: 0px !important; `;
-            //                 // btns[k].child.add_style_pseudo_class('mid-child');
-            //         }
-            //     }
-            // }
         }
     }
 
@@ -1786,6 +1751,12 @@ export default class Openbar extends Extension {
         panel.remove_style_class_name('openbar');
         panel.remove_style_class_name('candybar');
         panel.remove_style_class_name('trilands');
+        for(const box of this.panelBoxes) {
+            for(const btn of box) {
+                btn.remove_style_pseudo_class('trilands-left');
+                btn.remove_style_pseudo_class('trilands-right');
+            }
+        }
         // Reset left padding widget into DateMenu button
         if(this.dateMenuLeftPadWidget) {
             this.dateMenuBtnBox.insert_child_at_index(this.dateMenuLeftPadWidget, 0);
