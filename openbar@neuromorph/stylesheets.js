@@ -834,6 +834,10 @@ function createGtkCss(obar, gtk4) {
     }
 
     if(trafficLightButtons) {
+        // GTK4 buttons stretch to the Adw headerbar height. Paint the centered
+        // fixed-size native image instead, keeping the full button hit target.
+        // GTK3 titlebuttons retain their existing button-face fallback.
+        const trafficLightFace = gtk4 ? ' > image' : '';
         gtkstring += `
         button.titlebutton,
         windowcontrols > button {
@@ -871,47 +875,47 @@ function createGtkCss(obar, gtk4) {
             color: rgba(25, 25, 25, 0.9);
         }
 
-        button.titlebutton.close,
-        button.titlebutton.close:hover:backdrop,
-        windowcontrols > button.close,
-        windowcontrols > button.close:hover:backdrop {
+        button.titlebutton.close${trafficLightFace},
+        button.titlebutton.close:hover:backdrop${trafficLightFace},
+        windowcontrols > button.close${trafficLightFace},
+        windowcontrols > button.close:hover:backdrop${trafficLightFace} {
           background-color: #fc6060;
           background-image: none;
         }
 
-        button.titlebutton.close:hover,
-        windowcontrols > button.close:hover {
+        button.titlebutton.close:hover${trafficLightFace},
+        windowcontrols > button.close:hover${trafficLightFace} {
           background-color: shade(#fc6060,1.1);
         }
 
-        button.titlebutton.maximize,
-        button.titlebutton.maximize:hover:backdrop,
-        windowcontrols > button.maximize,
-        windowcontrols > button.maximize:hover:backdrop {
+        button.titlebutton.maximize${trafficLightFace},
+        button.titlebutton.maximize:hover:backdrop${trafficLightFace},
+        windowcontrols > button.maximize${trafficLightFace},
+        windowcontrols > button.maximize:hover:backdrop${trafficLightFace} {
           background-color: #44ba80;
           background-image: none;
         }
 
-        button.titlebutton.maximize:hover,
-        windowcontrols > button.maximize:hover {
+        button.titlebutton.maximize:hover${trafficLightFace},
+        windowcontrols > button.maximize:hover${trafficLightFace} {
           background-color: shade(#44ba80,1.1);
         }
 
-        button.titlebutton.minimize,
-        button.titlebutton.minimize:hover:backdrop,
-        windowcontrols > button.minimize,
-        windowcontrols > button.minimize:hover:backdrop {
+        button.titlebutton.minimize${trafficLightFace},
+        button.titlebutton.minimize:hover:backdrop${trafficLightFace},
+        windowcontrols > button.minimize${trafficLightFace},
+        windowcontrols > button.minimize:hover:backdrop${trafficLightFace} {
           background-color: #eeaf50;
           background-image: none;
         }
 
-        button.titlebutton.minimize:hover,
-        windowcontrols > button.minimize:hover {
+        button.titlebutton.minimize:hover${trafficLightFace},
+        windowcontrols > button.minimize:hover${trafficLightFace} {
           background-color: shade(#eeaf50,1.1);
         }
 
-        button.titlebutton.close:backdrop, button.titlebutton.maximize:backdrop, button.titlebutton.minimize:backdrop,
-        windowcontrols > button.close:backdrop, windowcontrols > button.maximize:backdrop, windowcontrols > button.minimize:backdrop {
+        button.titlebutton.close:backdrop${trafficLightFace}, button.titlebutton.maximize:backdrop${trafficLightFace}, button.titlebutton.minimize:backdrop${trafficLightFace},
+        windowcontrols > button.close:backdrop${trafficLightFace}, windowcontrols > button.maximize:backdrop${trafficLightFace}, windowcontrols > button.minimize:backdrop${trafficLightFace} {
           background-color: #c0bfc0;
         }
         `;
@@ -920,8 +924,21 @@ function createGtkCss(obar, gtk4) {
             gtkstring += `
             button.titlebutton,
             windowcontrols > button {
-                padding: 2px;
+                background-color: transparent;
+                background-image: none;
+                box-shadow: none;
+                border: none;
+                padding: 0;
                 margin: 0 3px;
+            }
+            button.titlebutton > image,
+            windowcontrols > button > image {
+                min-width: 16px;
+                min-height: 16px;
+                padding: 2px;
+                margin: 0;
+                border-radius: 100%;
+                box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
             }
             `;
         }

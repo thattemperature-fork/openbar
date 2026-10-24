@@ -19,12 +19,15 @@ if [[ ${OPENBAR_GTK_NIX:-0} != 1 ]]; then
     export __EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json"
     export OPENBAR_GTK_NIX=1
     exec nix shell "$ref#gjs" "$ref#glib.dev" "$ref#glib.bin" "$ref#dbus" \
-        "$ref#gnome-shell" "$ref#mesa" "$ref#gtk3" "$ref#gtk4" "$ref#libadwaita" -c bash "$0" "$@"
+        "$ref#gnome-shell" "$ref#mesa" "$ref#gtk3" "$ref#gtk4" "$ref#libadwaita" \
+        "$ref#pango" "$ref#gdk-pixbuf" "$ref#graphene" "$ref#harfbuzz" \
+        "$ref#gobject-introspection" "$ref#at-spi2-core" "$ref#adwaita-icon-theme" \
+        "$ref#gsettings-desktop-schemas" -c bash "$0" "$@"
 fi
 : "${TMPDIR:?Set TMPDIR to durable scratch}"
 # Also make the existing 23 writer/ownership tests reproducible with these deps.
 if [[ ${1:-} == writers ]]; then exec bash "$repo/tests/run-write-tests.sh"; fi
-if [[ $# == 0 ]]; then set -- view3 view4; fi
+if [[ $# == 0 ]]; then set -- view3 view4 traffic3 traffic4; fi
 export OPENBAR_GTK_REPO="$repo" OPENBAR_GTK_DIR OPENBAR_GTK_SUITES="$*" OPENBAR_GTK_GJS
 OPENBAR_GTK_GJS=$(command -v gjs)
 OPENBAR_GTK_DIR=$(mktemp -d "$TMPDIR/openbar-round2-gtk.XXXXXX")
