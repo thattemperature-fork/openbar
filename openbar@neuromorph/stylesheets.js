@@ -2788,6 +2788,7 @@ function getStylesheet(obar, Me) {
             }
 
             ${openmenuClass}.quick-menu-toggle .quick-toggle-arrow,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button,
             ${openmenuClass}.quick-toggle-has-menu .quick-toggle-arrow {
                 color: rgba(${smfgred},${smfggreen},${smfgblue},${mfgAlpha}) !important;
                 background-color: rgba(${smbgred},${smbggreen},${smbgblue},${mbgAlpha*1.2}) !important;
@@ -2838,6 +2839,43 @@ function getStylesheet(obar, Me) {
             ${openmenuClass} .quick-toggle-menu-button.icon-button:checked:hover , ${openmenuClass} .quick-toggle-menu-button.icon-button:checked:focus  {
                 color: rgba(${amhfgred},${amhfggreen},${amhfgblue},1) !important;
                 background-color: ${mshg} !important;
+            }
+
+            /* GNOME 48+: the expansion button is no longer quick-toggle-arrow.
+             * Keep both halves on the same palette/alpha and avoid the native
+             * accent-colored separator showing through translucent toggles. */
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button {
+                color: rgba(${mfgred},${mfggreen},${mfgblue},${mfgAlpha}) !important;
+                background-color: ${smbg} !important;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:ltr {
+                border-radius: 0 ${qtoggleRadius}px ${qtoggleRadius}px 0;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:rtl {
+                border-radius: ${qtoggleRadius}px 0 0 ${qtoggleRadius}px;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:hover,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:focus {
+                color: rgba(${mhfgred},${mhfggreen},${mhfgblue},1) !important;
+                background-color: ${smhbg} !important;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:checked,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:active {
+                color: rgba(${amfgred},${amfggreen},${amfgblue},1) !important;
+                background-color: rgba(${msred},${msgreen},${msblue},${msAlpha}) !important;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:checked:hover,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:checked:focus,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:active:hover,
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-menu-button:active:focus {
+                color: rgba(${amhfgred},${amhfggreen},${amhfgblue},1) !important;
+                background-color: ${mshg} !important;
+            }
+            ${openmenuClass}.quick-toggle-has-menu .quick-toggle-separator {
+                background-color: rgba(${mfgred},${mfggreen},${mfgblue},${mfgAlpha*0.25}) !important;
+            }
+            ${openmenuClass}.quick-toggle-has-menu:checked .quick-toggle-separator {
+                background-color: rgba(${amfgred},${amfggreen},${amfgblue},0.25) !important;
             }
         `;
     }
