@@ -3090,7 +3090,7 @@ function getStylesheet(obar, Me) {
     if(applyAccentShell) {
         stylesheet += `
         .overview-tile:active, .overview-tile:checked,
-        .app-well-app:active .overview-icon, .app-well-app:checked .overview-icon
+        .app-well-app:active .overview-icon, .app-well-app:checked .overview-icon,
         .show-apps:active .overview-icon, .show-apps:checked .overview-icon,
         .grid-search-result:active .overview-icon, .grid-search-result:checked .overview-icon {
             color: rgba(${amfgred},${amfggreen},${amfgblue},1.0) !important;
@@ -3117,7 +3117,7 @@ function getStylesheet(obar, Me) {
             /*transition-duration: 100ms;*/
         }
         .overview-tile:focus, .overview-tile:selected,
-        .app-well-app:focus .overview-icon, .app-well-app:selected .overview-icon
+        .app-well-app:focus .overview-icon, .app-well-app:selected .overview-icon,
         .grid-search-result:focus .overview-icon, .grid-search-result:selected .overview-icon {
             background-color: ${smhbg} ;
             /*transition-duration: 100ms;*/

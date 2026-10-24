@@ -123,6 +123,39 @@ async function test() {
             box.destroy();
             obar.enable(); await obar._runtimeAssetsReady;
         }
+    } else if (group === 'selectors') {
+        settings.set_boolean('apply-accent-shell', true);
+        settings.set_boolean('apply-all-shell', true);
+        settings.set_boolean('autohg-menu', false);
+        settings.set_strv('mscolor', ['1', '0', '0']);
+        settings.set_double('msalpha', 1);
+        settings.set_string('dashdock-style', 'Default');
+        assert(await sheets.reloadStyle(obar, obar), 'generated actual app-grid stylesheet');
+        const root = new St.BoxLayout(); Main.uiGroup.add_child(root);
+        const make = (cls, state, modern = false) => {
+            const actor = new St.BoxLayout({style_class: cls});
+            const icon = new St.Widget({style_class: 'overview-icon', width: 30, height: 30});
+            actor.add_child(icon); root.add_child(actor); actor.set_style_pseudo_class(state);
+            return modern ? actor : icon;
+        };
+        const color = actor => actor.get_theme_node().get_background_color().to_string();
+        try {
+            const active = make('app-well-app', 'active');
+            equal(color(active), '#ff0000ff', 'active legacy positive control');
+            for (const cls of ['app-well-app', 'show-apps', 'grid-search-result']) {
+                for (const state of ['active', 'checked', 'checked hover'])
+                    equal(color(make(cls, state)), color(active), `legacy ${cls}/${state} accent highlight`);
+            }
+            const focus = make('app-well-app', 'focus');
+            assert(color(focus) !== '#00000000' && color(focus) !== color(active), 'focus uses distinct nontransparent highlight');
+            for (const cls of ['app-well-app', 'grid-search-result'])
+                for (const state of ['focus', 'selected'])
+                    equal(color(make(cls, state)), color(focus), `legacy ${cls}/${state} selection highlight`);
+            for (const state of ['active', 'checked', 'checked hover'])
+                equal(color(make('overview-tile', state, true)), color(active), `modern overview-tile/${state} accent`);
+            for (const state of ['focus', 'selected'])
+                equal(color(make('overview-tile', state, true)), color(focus), `modern overview-tile/${state} selection`);
+        } finally { root.destroy(); }
     } else {
         throw Error(`unimplemented test group ${group}`);
     }

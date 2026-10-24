@@ -25,6 +25,12 @@ Replace physical sibling CSS selectors with owned `trilands-left` / `trilands-ri
 
 RED Shell50.4: `openbar-round2-panel-trilands.74jBs4`, sole visible radii `[0,14,14,0]` versus required `[14,14,14,14]`. GREEN: `openbar-round2-panel-trilands.9j0tMj`, **42 assertions** including LTR/RTL, hidden siblings, unchanged actor identities/order, zero/one/many, signal-only show/hide, type and lifecycle cleanup. The initial failing fixture teardown was tightened to disable before destroying its temporary actors; production endpoint failure preceded teardown.
 
+## App-grid selector lists
+
+Two comma-only fixes restore checked legacy app, active Show Apps and selected legacy app highlight matches. Native generated stylesheet tests cover `app-well-app`, `show-apps`, `grid-search-result`, and modern `overview-tile`, distinct focus/selection versus accent colors and compound checked+hover.
+
+RED Shell50.4: `openbar-round2-panel-selectors.GUgEI1`, checked legacy background transparent instead of red. GREEN: `openbar-round2-panel-selectors.1uxgJE`, **23 assertions**. Modern selectors remain controls, not a claim they previously failed.
+
 ## Reproduction command
 
 With coherent Shell/typelibs/Mesa from a single Nix ref (see existing native testing docs), run:
