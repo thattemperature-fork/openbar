@@ -812,6 +812,8 @@ export default class Openbar extends Extension {
 
     setPanelBoxPosition(position, height, margin, setBottomMargin, bottomMargin, borderWidth, bartype) {
         let panelMonitor = this.getPanelMonitor()[0];
+        if(!panelMonitor)
+            return;
         let panelBox = Main.layoutManager.panelBox;
         if(position == 'Top') {
             let topX = panelMonitor.x;
@@ -1055,11 +1057,28 @@ export default class Openbar extends Extension {
 
     // Connect multiple signals to ensure detecting background-change in all Gnome versions
     connectPrimaryBGChanged() {
-        const pMonitorIdx = Main.layoutManager.primaryIndex;
-        this._connections.connect(Main.layoutManager._bgManagers[pMonitorIdx], 'changed', this.updateBguri.bind(this));
-        this._connections.connect(this._bgSettings, 'changed::picture-uri', this.updateBguri.bind(this));
-        this._connections.connect(this._bgSettings, 'changed::picture-uri-dark', this.updateBguri.bind(this));
-        this._connections.connect(this._intSettings, 'changed::color-scheme', this.updatePanelStyle.bind(this), 'color-scheme');
+        if(!this._connections || !this._settings || this.disabling)
+            return;
+        const LM = Main.layoutManager;
+        const panelMonitor = this.getPanelMonitor()[0];
+        if(panelMonitor) {
+            this._settings.set_int('monitor-height', panelMonitor.height);
+            this._settings.set_int('monitor-width', panelMonitor.width);
+        }
+        const manager = LM.monitors.length ? LM._bgManagers?.[LM.primaryIndex] : null;
+        if(this._primaryBGManager !== manager) {
+            if(this._primaryBGManager)
+                this._connections.disconnect(this._primaryBGManager, 'changed');
+            this._primaryBGManager = manager;
+            if(manager)
+                this._connections.connect(manager, 'changed', this.updateBguri.bind(this));
+        }
+        if(!this._backgroundSettingsConnected) {
+            this._connections.connect(this._bgSettings, 'changed::picture-uri', this.updateBguri.bind(this));
+            this._connections.connect(this._bgSettings, 'changed::picture-uri-dark', this.updateBguri.bind(this));
+            this._connections.connect(this._intSettings, 'changed::color-scheme', this.updatePanelStyle.bind(this), 'color-scheme');
+            this._backgroundSettingsConnected = true;
+        }
     }
 
     createFittsWidget(box, btn) {
@@ -1387,6 +1406,8 @@ export default class Openbar extends Extension {
         this.updateBguriId = null;
         this.postStartupId = null;
         this.disabling = false;
+        this._primaryBGManager = null;
+        this._backgroundSettingsConnected = false;
 
         // Settings for desktop background image (set bg-uri as per color scheme)
         this._bgSettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.background' });
@@ -1403,8 +1424,10 @@ export default class Openbar extends Extension {
         this._settings.set_boolean('pause-reload', false);
 
         let panelMonitor = this.getPanelMonitor()[0];
-        this._settings.set_int('monitor-height', panelMonitor.height);
-        this._settings.set_int('monitor-width', panelMonitor.width);
+        if(panelMonitor) {
+            this._settings.set_int('monitor-height', panelMonitor.height);
+            this._settings.set_int('monitor-width', panelMonitor.width);
+        }
 
         // Connect to the settings changes
         this._settings.connect('changed', (settings, key) => {
@@ -1567,6 +1590,8 @@ export default class Openbar extends Extension {
 
         this._connections.disconnectAll();
         this._connections = null;
+        this._primaryBGManager = null;
+        this._backgroundSettingsConnected = false;
 
         this.disconnectWindowSignals();
 
