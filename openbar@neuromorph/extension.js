@@ -483,7 +483,7 @@ export default class Openbar extends Extension {
         let menuChildren = box.get_children();
         menuChildren.forEach(menuItem => {
             this.applyMenuClass(menuItem, add);
-            if(menuItem.menu) {
+            if(menuItem.menu?.box) {
                 this.applyMenuClass(menuItem.menu.box, add);
                 menuItem.menu.box.get_children().forEach(child => {
                     this.applyMenuClass(child, add);
@@ -493,7 +493,7 @@ export default class Openbar extends Extension {
             let subChildren = menuItem.get_children(); // Required for submenus, at least in Gnome 42 settings menu
             subChildren.forEach(menuchild => {
                 this.applyMenuClass(menuchild, add);
-                if(menuchild.menu) {
+                if(menuchild.menu?.box) {
                     this.applyMenuClass(menuchild.menu.box, add);
                     menuchild.menu.box.get_children().forEach(child => {
                         this.applyMenuClass(child, add);
@@ -591,17 +591,13 @@ export default class Openbar extends Extension {
 
                     // DateMenu: Notifications (messages and media), DND and Clear buttons
                     //           Calendar Grid, Events, World Clock, Weather
-                    if(btn.child.constructor.name === 'DateMenuButton') {
-                        const bin = btn.child.menu.box.get_child_at_index(0); // CalendarArea
-                        const hbox = bin.get_child_at_index(0); // hbox with left and right sections
-
-                        const msgList = hbox.get_child_at_index(0); // Left Pane/Section with notifications etc
+                    if(btn.child === Main.panel.statusArea.dateMenu || btn.child.constructor.name === 'DateMenuButton') {
+                        // GNOME 45–50 retain these semantic references even when
+                        // another extension reparents/reorders the notification pane.
+                        const msgList = btn.child._messageList;
                         this.applyMenuClass(msgList, add);
-                        const placeholder = msgList.get_child_at_index(0); // placeholder for 'No Notifications'
-                        this.applyMenuClass(placeholder, add);
-                        const msgbox = msgList.get_child_at_index(1);
-                        const msgScroll = msgbox.get_child_at_index(0);
-                        const sectionList = msgList._messageView ?? msgScroll.child;
+                        this.applyMenuClass(msgList._placeholder, add);
+                        const sectionList = msgList._messageView ?? msgList._sectionList;
                         if(!msgList._messageView && add) {
                             this._connections.disconnect(sectionList, this.addedSignal);
                             this._connections.connect(sectionList, this.addedSignal, () => {
@@ -618,7 +614,7 @@ export default class Openbar extends Extension {
                         }
                         this.applyMenuClass(msgList._clearButton, add);
 
-                        const vbox = hbox.get_child_at_index(1); // Right Pane/Section vbox for calendar etc
+                        const vbox = btn.child._calendar.get_parent(); // CalendarColumn, independent of notification position
                         vbox.get_children().forEach(item => {
                             this.applyMenuClass(item, add);
                             item.get_children().forEach(child => {
