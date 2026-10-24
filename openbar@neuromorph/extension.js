@@ -900,15 +900,9 @@ export default class Openbar extends Extension {
 
         // Set PanelBox position
         let position = this._settings.get_string('position');
-        let borderWidth = this._settings.get_double('bwidth');
-        let height = this._settings.get_double('height');
-        let margin = this._settings.get_double('margin');
-        let setBottomMargin = this._settings.get_boolean('set-bottom-margin');
-        let bottomMargin = this._settings.get_double('bottom-margin');
         if(position == 'Bottom' || key == 'position' || key == 'monitors-changed') {
-            // If WMax is On then ignore 'margin' changes (do not set position) else set position
-            if(!(this.wmax && (key == 'margin' || key == 'bottom-margin')))
-                this.setPanelBoxPosition(position, height, margin, setBottomMargin, bottomMargin, borderWidth, bartype);
+            // Settings/reloads must use the same geometry policy as window events.
+            this.setPanelBoxPosWindowMax(!!this.wmax, key);
         }
         // Reset Fitts Widgets
         const fittsWidgets = this._settings.get_boolean('fitts-widgets');
@@ -999,9 +993,11 @@ export default class Openbar extends Extension {
     // Need to set panelBox position since bar margins/height can change with WMax
     setPanelBoxPosWindowMax(wmax, signal) {
         const position = this._settings.get_string('position');
+        // These are policy state, not a geometry cache. Settings, scale and the
+        // monitor can change without a WMax transition (including no monitors).
+        this.wmax = !!wmax;
+        this.position = position;
         if(position == 'Bottom') {
-            if(this.position == position && this.wmax == wmax && !(signal == 'cust-margin-wmax' || signal == 'margin-wmax'))
-                return;
             const bartype = this._settings.get_string('bartype');
             const borderWidth = this._settings.get_double('bwidth');
             const custMarginWmax = this._settings.get_boolean('cust-margin-wmax');
@@ -1012,15 +1008,11 @@ export default class Openbar extends Extension {
             if(wmax) {
                 margin = custMarginWmax? marginWMax: margin;
             }
-            this.setPanelBoxPosition(position, height, margin, false, bottomMargin, borderWidth, bartype);
-            this.wmax = wmax;
-            this.position = position;
+            const setBottomMargin = !wmax && this._settings.get_boolean('set-bottom-margin');
+            this.setPanelBoxPosition(position, height, margin, setBottomMargin, bottomMargin, borderWidth, bartype);
         }
         else if(position == 'Top') {
-            if(this.position == position)
-                return;
             this.setPanelBoxPosition(position);
-            this.position = position;
         }
     }
 
