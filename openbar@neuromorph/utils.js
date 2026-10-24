@@ -23,7 +23,7 @@
 // Brightness of color in terms of HSP value
 export function getHSP(color, g, b) {
     let r;
-    if(g)
+    if(arguments.length === 3)
         r = color;
     else
         [r, g, b] = [color[0], color[1], color[2]];
@@ -191,12 +191,13 @@ export function rgbToLab(rgbColor) {
         return val <= 0.04045 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
     });
 
-    const x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+    // sRGB uses the D65/2° reference white. Lab operates on X/Xn, Y/Yn, Z/Zn.
+    const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047;
     const y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
-    const z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
+    const z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883;
 
-    const epsilon = 0.008856; // 6/29
-    const kappa = 903.3; // 24389/27
+    const epsilon = 216 / 24389; // (6/29)^3
+    const kappa = 24389 / 27;
 
     const fx = x > epsilon ? Math.pow(x, 1 / 3) : (kappa * x + 16) / 116;
     const fy = y > epsilon ? Math.pow(y, 1 / 3) : (kappa * y + 16) / 116;
@@ -223,9 +224,12 @@ export function colorDistance(color1, color2) {
 
 // Calculate CIELAB color difference 2000 (ΔE00)
 export function colorDistance2000(color1, color2) {
-    const lab1 = rgbToLab(color1);
-    const lab2 = rgbToLab(color2);
+    return deltaE2000(rgbToLab(color1), rgbToLab(color2));
+}
 
+// Sharma, Wu & Dalal (2005), CIEDE2000 with unit parametric factors.
+// Lab entry point keeps the formula independently testable with published pairs.
+export function deltaE2000(lab1, lab2) {
     const deltaL = lab2[0] - lab1[0];
     const meanL = (lab1[0] + lab2[0]) / 2;
 
@@ -242,11 +246,19 @@ export function colorDistance2000(color1, color2) {
     const C2Prime = Math.sqrt(a2Prime * a2Prime + lab2[2] * lab2[2]);
     const meanCPrime = (C1Prime + C2Prime) / 2;
 
-    const h1Prime = (Math.atan2(lab1[2], a1Prime) * 180) / Math.PI + (lab1[2] < 0 ? 360 : 0);
-    const h2Prime = (Math.atan2(lab2[2], a2Prime) * 180) / Math.PI + (lab2[2] < 0 ? 360 : 0);
+    const hue = (a, b) => {
+        if(a === 0 && b === 0)
+            return 0;
+        const angle = Math.atan2(b, a) * 180 / Math.PI;
+        return angle < 0 ? angle + 360 : angle;
+    };
+    const h1Prime = hue(a1Prime, lab1[2]);
+    const h2Prime = hue(a2Prime, lab2[2]);
 
     let deltaHPrime;
-    if (Math.abs(h1Prime - h2Prime) <= 180) {
+    if (C1Prime * C2Prime === 0) {
+        deltaHPrime = 0;
+    } else if (Math.abs(h1Prime - h2Prime) <= 180) {
         deltaHPrime = h2Prime - h1Prime;
     } else if (h2Prime <= h1Prime) {
         deltaHPrime = h2Prime - h1Prime + 360;
@@ -254,7 +266,13 @@ export function colorDistance2000(color1, color2) {
         deltaHPrime = h2Prime - h1Prime - 360;
     }
 
-    const deltaHPrimeMean = (Math.abs(h1Prime - h2Prime) <= 180) ? h1Prime + h2Prime / 2 : (h1Prime + h2Prime + 360) / 2;
+    let deltaHPrimeMean;
+    if(C1Prime * C2Prime === 0)
+        deltaHPrimeMean = h1Prime + h2Prime;
+    else if(Math.abs(h1Prime - h2Prime) <= 180)
+        deltaHPrimeMean = (h1Prime + h2Prime) / 2;
+    else
+        deltaHPrimeMean = (h1Prime + h2Prime + (h1Prime + h2Prime < 360 ? 360 : -360)) / 2;
 
     const T = 1 - 0.17 * Math.cos((deltaHPrimeMean - 30) * (Math.PI / 180)) + 0.24 * Math.cos(2 * deltaHPrimeMean * (Math.PI / 180)) + 0.32 * Math.cos((3 * deltaHPrimeMean + 6) * (Math.PI / 180)) - 0.20 * Math.cos((4 * deltaHPrimeMean - 63) * (Math.PI / 180));
     const deltaTheta = 30 * Math.exp(-((deltaHPrimeMean - 275) / 25) * ((deltaHPrimeMean - 275) / 25));
@@ -266,10 +284,10 @@ export function colorDistance2000(color1, color2) {
     const R_Term = -Math.sin((2 * deltaTheta) * (Math.PI / 180)) * R_C;
 
     const L_Diff = deltaL / (S_L);
-    const C_Diff = (C1Prime - C2Prime) / (S_C);
-    const H_Diff = (deltaHPrime - R_Term) / (S_H);
+    const C_Diff = (C2Prime - C1Prime) / S_C;
+    const H_Diff = 2 * Math.sqrt(C1Prime * C2Prime) * Math.sin(deltaHPrime * Math.PI / 360) / S_H;
 
-    return Math.sqrt(L_Diff * L_Diff + C_Diff * C_Diff + H_Diff * H_Diff);
+    return Math.sqrt(L_Diff * L_Diff + C_Diff * C_Diff + H_Diff * H_Diff + R_Term * C_Diff * H_Diff);
 }
 
 // Add tint to RGB color

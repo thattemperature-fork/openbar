@@ -7,7 +7,7 @@ const source = (await readFile(new URL('autothemes.js', root), 'utf8')).replace(
 const {autoApplyBGPalette, onModeChange} = await import(moduleURL(source));
 let passed = 0, failed = 0;
 function test(name, fn) { try { fn(); passed++; } catch (e) { failed++; console.error(`FAIL ${name}: ${e.message}`); } }
-function fixture(dark = 'Dark', light = 'Light', paused = false) {
+export function fixture(dark = 'Dark', light = 'Light', paused = false) {
     const values = new Map(Object.entries({'autotheme-dark': dark, 'autotheme-light': light, 'pause-reload': paused, bartype: 'Mainland'}));
     for (let i = 1; i <= 12; i++) {
         values.set('count'+i, 13-i);

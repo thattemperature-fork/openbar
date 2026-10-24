@@ -54,6 +54,32 @@ References:
 - https://stackoverflow.com/questions/76143458/what-are-the-values-of-the-primary-and-secondary-colors-in-cie-lab-color-space
   — discussion of sRGB primaries and D65/2° Lab reference values.
 
+## 9 — verification
+
+```sh
+nix shell nixpkgs#nodejs -c node tests/palette-colors.mjs
+nix shell nixpkgs#nodejs -c node tests/palette-theme-review.mjs
+```
+
+RED before HSP fix: 2 passed/12 failed in the HSP+Lab subset. HSP alone
+then passed while Lab and RGB DeltaE identity/symmetry still failed (e.g.
+white identity 0.0418156388 instead of zero; black→green 125.9902 versus
+107.3251 in reverse). GREEN: **97 tests passed**, including all **34** Sharma
+vectors in both directions within **0.00005**, identity, 49 RGB pairs and
+sRGB black/white/primaries within **0.0003** of the published D65 answer
+(the source's rounded XYZ matrix accounts for the tiny blue difference).
+`palette-pause.mjs`: **30 passed** again. The supplementary text file is
+unmodified downloaded data, attributed above; no MATLAB code is copied.
+
+Palette review on the deterministic 12-color fixture (not a visual usability
+claim): all four themes retain the same accent. Distances now change selected
+backgrounds, as expected: Dark menu `[0.165,0.165,0.173]` →
+`[0.141,0.192,0.157]`, Light menu `[0.902,0.925,0.910]` →
+`[0.922,0.902,0.925]`, Color menu `[0.565,0.565,0.588]` →
+`[0.494,0.612,0.529]`; Pastel menu unchanged. The review script prints all
+bar/menu/submenu/accent before/after values. No theme thresholds were retuned
+against the formerly incorrect metric.
+
 ## 10 — wallpaper: investigation and plan
 
 Research:
