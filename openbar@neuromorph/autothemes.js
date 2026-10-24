@@ -74,7 +74,9 @@ export function autoApplyBGPalette(obar, requestMode) {
     let colorCounts = [], colorTotal = 0;
     // Get pixel count for each color in palette
     for(let i=1; i<=12; i++) {
-        let count = obar._settings.get_int('count'+i);
+        // Shared count keys describe the displayed mode; keep the other mode's
+        // populations paired with its own palette during this session.
+        let count = obar._paletteCounts?.[requestMode]?.[i-1] ?? obar._settings.get_int('count'+i);
         colorCounts.push(count);
         colorTotal += count;
     }
@@ -1076,6 +1078,9 @@ export function onModeChange(obar) {
     // Copy palette to main and Toggle 'bg-change' to update the current mode palette in preferences window
     for(let i = 1; i <= 12; i++) {
         obar._settings.set_strv('palette'+i, obar._settings.get_strv(prefix+'palette'+i));
+        const count = obar._paletteCounts?.[prefix.slice(0, -1)]?.[i-1];
+        if(count !== undefined)
+            obar._settings.set_int('count'+i, count);
     }
     let bgchange = obar._settings.get_boolean('bg-change');
     if(bgchange)

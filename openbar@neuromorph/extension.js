@@ -201,119 +201,134 @@ export default class Openbar extends Extension {
     }
 
     // Generate a color palette from desktop background image
-    getPaletteFromImage(pictureUri) {
-        let pictureFile = Gio.File.new_for_uri(pictureUri);
-
-        // Load the image into a pixbuf
-        let pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(pictureFile.get_path(), 1000, -1);
-        let nChannels = pixbuf.n_channels;
-
-        // Get the width, height and pixel count of the image
-        let width = pixbuf.get_width();
-        let height = pixbuf.get_height();
-        let pixelCount = width*height;
-        let offset = 1;
-
-        // Get the pixel data as an array of bytes
-        let pixels = pixbuf.get_pixels();
-
-        let pixelArray = [];
-        // Loop through the pixels and get the rgba values
-        for (let i = 0, index, r, g, b, a; i < pixelCount; i = i + offset) {
-            index = i * nChannels;
-
-            // Get the red, green, blue, and alpha values
-            r = pixels[index];
-            g = pixels[index + 1];
-            b = pixels[index + 2];
-
-            a = nChannels==4? pixels[index + 3] : undefined;
-
-            // Save pixles that are not transparent and not full white/black
-            if (typeof a === 'undefined' || a >= 125) {
-                if (!(r > 250 && g > 250 && b > 250) && !(r < 5 && g < 5 && b < 5)) {
-                    pixelArray.push([r, g, b]);
-                    // pixelArray.push(Material.argbFromRgb(r, g, b));
-                }
-            }
+    async getPaletteFromImage(pictureUri, cancellable = null) {
+        if(!pictureUri || /\.xml$/i.test(pictureUri))
+            return [null, null];
+        const pictureFile = Gio.File.new_for_uri(pictureUri);
+        const stream = await new Promise((resolve, reject) => {
+            pictureFile.read_async(GLib.PRIORITY_DEFAULT, cancellable, (file, result) => {
+                try { resolve(file.read_finish(result)); } catch(error) { reject(error); }
+            });
+        });
+        let pixbuf;
+        try {
+            // Decoding runs off the Shell thread; keep both dimensions bounded.
+            pixbuf = await new Promise((resolve, reject) => {
+                GdkPixbuf.Pixbuf.new_from_stream_at_scale_async(stream, 256, 256, true,
+                    cancellable, (_source, result) => {
+                        try { resolve(GdkPixbuf.Pixbuf.new_from_stream_finish(result)); }
+                        catch(error) { reject(error); }
+                    });
+            });
+        } finally {
+            await new Promise((resolve, reject) => {
+                // Closing must still run when the decode was cancelled.
+                stream.close_async(GLib.PRIORITY_DEFAULT, null, (input, result) => {
+                    try { input.close_finish(result); resolve(); } catch(error) { reject(error); }
+                });
+            });
         }
-        // console.log('pixelCount, pixelarray len ', pixelCount, pixelArray.length);
-
-        // Generate color palette of 12 colors using Quantize to possibly get all colors for color-button
-        const cmap12 = Quantize.quantize(pixelArray, 12);
-        const palette12 = cmap12? cmap12.palette() : null;
-        const count12 = cmap12? cmap12.colorCounts() : null;
-
-        // Sort palette12 and count12 arrays by count descending
-        palette12?.sort((a, b) => count12[palette12.indexOf(b)] - count12[palette12.indexOf(a)]);
-        count12?.sort((a, b) => b - a);
-        // console.log('palette12 sorted ', palette12, 'count12 sorted ', count12);
-
-        return [palette12, count12];
+        if(cancellable?.is_cancelled())
+            return [null, null];
+        const width = pixbuf.get_width(), height = pixbuf.get_height();
+        const channels = pixbuf.n_channels, rowstride = pixbuf.get_rowstride();
+        const pixels = pixbuf.get_pixels();
+        const pixelArray = [];
+        // Bound JS allocations/quantizer work even for large or portrait images.
+        const step = Math.max(1, Math.ceil(width * height / 10000));
+        for(let i = 0; i < width * height; i += step) {
+            const index = Math.floor(i / width) * rowstride + (i % width) * channels;
+            const r = pixels[index], g = pixels[index + 1], b = pixels[index + 2];
+            if(channels === 4 && pixels[index + 3] < 125)
+                continue;
+            if(!(r > 250 && g > 250 && b > 250) && !(r < 5 && g < 5 && b < 5))
+                pixelArray.push([r, g, b]);
+        }
+        const cmap = Quantize.quantize(pixelArray, 12);
+        if(!cmap)
+            return [null, null];
+        const counts = cmap.colorCounts();
+        // Never detach a population from its color while sorting.
+        const entries = cmap.palette().map((color, i) => [color, counts[i]])
+            .filter(([, count]) => Number.isFinite(count) && count > 0)
+            .sort((a, b) => b[1] - a[1]);
+        return [entries.map(([color]) => color), entries.map(([, count]) => count)];
     }
 
-    backgroundPalette() {
-        // Get the latest background image file (from picture-uri and picture-uri-dark)
-        let pictureUriDark = this._settings.get_string('dark-bguri');
-        let pictureUriLight = this._settings.get_string('light-bguri');
-        const currentMode = this._intSettings.get_string('color-scheme');
-        let darklight, palette12, count12, pictureUri;
-        let uriArr = [pictureUriDark, pictureUriLight];
-        let sameUri = pictureUriDark == pictureUriLight;
-
-        for(let i = 0; i < uriArr.length; i++) {
-            darklight = (i==0) ? 'dark' : 'light';
-            pictureUri = uriArr[i];
-
-            if(pictureUri.endsWith('.xml') || pictureUri.endsWith('.XML'))
-                continue;
-
-            // Generate palette only once if both URI are same
-            if(!sameUri || i == 0) {
-                [palette12, count12] = this.getPaletteFromImage(pictureUri);
+    async backgroundPalette() {
+        if(!this._settings || !this._intSettings)
+            return;
+        this._paletteCancellable?.cancel();
+        const cancellable = new Gio.Cancellable();
+        this._paletteCancellable = cancellable;
+        const settings = this._settings;
+        const isCurrent = () => this._paletteCancellable === cancellable &&
+            !cancellable.is_cancelled() && this._settings === settings;
+        const uris = [settings.get_string('dark-bguri'), settings.get_string('light-bguri')];
+        // Deliberately scoped to this refresh: same URI may contain new image data.
+        const results = new Map();
+        try {
+            for(const [index, mode] of ['dark', 'light'].entries()) {
+                if(!isCurrent())
+                    return;
+                const uri = uris[index];
+                if(!uri || /\.xml$/i.test(uri))
+                    continue;
+                let result = results.get(uri);
+                if(!result) {
+                    try {
+                        result = await this.getPaletteFromImage(uri, cancellable);
+                    } catch(error) {
+                        if(!isCurrent())
+                            return;
+                        console.warn(`Open Bar: could not read wallpaper: ${error.message}`);
+                        continue;
+                    }
+                    results.set(uri, result);
+                }
+                if(!isCurrent())
+                    return;
+                const [palette, counts] = result;
+                if(!palette?.length || palette.length > 12 || palette.length !== counts?.length ||
+                    counts.some(count => !Number.isFinite(count) || count < 0) ||
+                    counts.reduce((a, b) => a + b, 0) <= 0 ||
+                    palette.some(color => color.length !== 3 || color.some(c => !Number.isFinite(c) || c < 0 || c > 255)))
+                    continue;
+                // Fill all slots so a short palette cannot retain older colors/counts.
+                const colors = Array.from({length: 12}, (_, i) => palette[i] ?? palette[0]);
+                const populations = Array.from({length: 12}, (_, i) => counts[i] ?? 0);
+                this._paletteCounts ??= {};
+                this._paletteCounts[mode] = populations;
+                const currentMode = this._intSettings.get_string('color-scheme') === 'prefer-dark' ? 'dark' : 'light';
+                for(let i = 0; i < 12; i++) {
+                    const color = colors[i].map(String);
+                    settings.set_strv(`${mode}-palette${i + 1}`, color);
+                    if(mode === currentMode) {
+                        settings.set_strv(`palette${i + 1}`, color);
+                        settings.set_int(`count${i + 1}`, populations[i]);
+                    }
+                }
+                if(mode === currentMode)
+                    settings.set_boolean('bg-change', !settings.get_boolean('bg-change'));
+                if(settings.get_boolean('autotheme-refresh') && settings.get_string(`autotheme-${mode}`) !== 'Select Theme')
+                    AutoThemes.autoApplyBGPalette(this, mode);
             }
-
-            // Save palette and counts to settings
-            let paletteIdx = 1;
-            palette12?.forEach(color => {
-                // Save palette to dark/light settings
-                this._settings.set_strv(darklight+'-'+'palette'+paletteIdx, [String(color[0]), String(color[1]), String(color[2])]);
-                // Copy the palette for current mode to main settings
-                if( (sameUri && i == 0) ||
-                    (darklight == 'dark' && currentMode == 'prefer-dark') ||
-                    (darklight == 'light' && currentMode != 'prefer-dark'))
-                    this._settings.set_strv('palette'+paletteIdx, [String(color[0]), String(color[1]), String(color[2])]);
-                paletteIdx++;
-            });
-            let countIdx = 1;
-            count12?.forEach(count => {
-                this._settings.set_int('count'+countIdx, count12[countIdx-1]);
-                countIdx++;
-            });
-
-            // Toggle setting 'bg-change' to update the current mode palette in preferences window
-            if( (sameUri && i == 0) ||
-                (darklight == 'dark' && currentMode == 'prefer-dark') ||
-                (darklight == 'light' && currentMode != 'prefer-dark')) {
-                let bgchange = this._settings.get_boolean('bg-change');
-                if(bgchange)
-                    this._settings.set_boolean('bg-change', false);
-                else
-                    this._settings.set_boolean('bg-change', true);
-            }
-
-            // Apply auto theme for new background palette if auto-refresh enabled and theme set for this iteration (darklight)
-            const autoRefresh = this._settings.get_boolean('autotheme-refresh');
-            let theme;
-            if(darklight == 'dark')
-                theme = this._settings.get_string('autotheme-dark');
-            else
-                theme = this._settings.get_string('autotheme-light');
-            if(autoRefresh && theme != 'Select Theme') {
-                // console.log('Auto theme refresh for ', darklight);
-                AutoThemes.autoApplyBGPalette(this, darklight);
-            }
+        } catch(error) {
+            // This entry point is also invoked by synchronous settings signals;
+            // consume failures rather than leaving an unobserved rejected promise.
+            if(isCurrent())
+                console.warn(`Open Bar: could not update wallpaper palette: ${error.message}`);
+        } finally {
+            if(this._paletteCancellable === cancellable)
+                this._paletteCancellable = null;
         }
+    }
+
+    // Lifecycle owner calls this before clearing settings (and before re-enable).
+    cancelBackgroundPalette() {
+        this._paletteCancellable?.cancel();
+        this._paletteCancellable = null;
+        this._paletteCounts = null;
     }
 
     _injectToFunction(parent, name, func) {
@@ -1077,46 +1092,27 @@ export default class Openbar extends Extension {
         this._updateAppearance('enabled');
     }
 
+    // Coalesce bursts, but always read the latest settings on the trailing edge.
     updateBguri(obj, signal) {
         if(!this._settings || this.disabling)
             return;
-        // console.log('update bguri called for signal ', signal);
-        // If the function is triggered multiple times in succession, ignore till timeout
-        if(this.updatingBguri) {
-            // console.log('update bguri already in progress');
-            return;
-        }
-        this.updatingBguri = true;
-        this._queueTimeout('updatingBguriId', () => {
-            this.updatingBguri = false;
-        }, 5000);
-        // console.log('==== Going ahead with bguri ====');
-        let colorScheme = this._intSettings.get_string('color-scheme');
-        if(colorScheme != this.colorScheme) {
-            this.colorScheme = colorScheme;
-            return;
-        }
-
+        // A newer request supersedes decoding now, not only after debounce.
+        this._paletteCancellable?.cancel();
         this._queueTimeout('updateBguriId', () => {
-            let bguriDark = this._bgSettings.get_string('picture-uri-dark');
-            let bguriLight = this._bgSettings.get_string('picture-uri');
+            if(!this._settings || !this._bgSettings || !this._intSettings)
+                return;
+            const colorScheme = this._intSettings.get_string('color-scheme');
+            this.colorScheme = colorScheme;
+            const bguriDark = this._bgSettings.get_string('picture-uri-dark');
+            const bguriLight = this._bgSettings.get_string('picture-uri');
             this._settings.set_string('dark-bguri', bguriDark);
             this._settings.set_string('light-bguri', bguriLight);
-
-            let bguriOld = this._settings.get_string('bguri');
-            let bguriNew;
-            if(colorScheme == 'prefer-dark')
-                bguriNew = bguriDark;
-            else
-                bguriNew = bguriLight;
+            const bguriOld = this._settings.get_string('bguri');
+            const bguriNew = colorScheme === 'prefer-dark' ? bguriDark : bguriLight;
             this._settings.set_string('bguri', bguriNew);
-
-            // Gnome45+: if bgnd changed with right click on image file,
-            // filepath (bguri) remains same, so manually call updatePanelStyle
-            if(bguriOld == bguriNew) {
-                // console.log('bguriOld == bguriNew - calling updatePanelStyle for bguri');
+            // A changed file may keep the same URI (GNOME's copied wallpaper).
+            if(bguriOld === bguriNew)
                 this.updatePanelStyle(this._settings, 'bguri');
-            }
         }, 200);
     }
 

@@ -69,5 +69,17 @@ for (const invalid of [0, -1, NaN, Infinity]) test(`invalid palette count ${inva
 });
 test('invalid mode is ignored', () => { const f = fixture(); autoApplyBGPalette(f, 'invalid'); assert.deepEqual(f.writes, []); });
 test('import/export is ignored', () => { const f = fixture(); f.values.set('import-export', true); autoApplyBGPalette(f, 'dark'); onModeChange(f); assert.deepEqual(f.writes, []); });
+test('per-mode populations drive auto-theme rather than shared current-mode counts', () => {
+    const f = fixture();
+    for(let i=1;i<=12;i++) f.values.set('count'+i,0);
+    f._paletteCounts = {dark: Array.from({length:12}, (_,i)=>13-i), light: Array(12).fill(0)};
+    autoApplyBGPalette(f,'dark');
+    assert.equal(f.values.get('autotheme-font'),true);
+    const length=f.writes.length; autoApplyBGPalette(f,'light'); assert.equal(f.writes.length,length);
+});
+test('mode change publishes matching population counts', () => {
+    const f=fixture();f._paletteCounts={dark:Array(12).fill(17)};onModeChange(f);
+    for(let i=1;i<=12;i++) assert.equal(f.values.get('count'+i),17);
+});
 console.log(`palette-pause: ${passed} passed, ${failed} failed`);
 if (failed) process.exitCode = 1;

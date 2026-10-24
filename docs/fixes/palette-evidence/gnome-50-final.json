@@ -1,0 +1,30 @@
+{
+  "shell": "50.4",
+  "assertions": 23,
+  "measurements": [
+    {
+      "label": "baseline",
+      "elapsedMs": 169.021,
+      "maxFrameGapMs": 185.023,
+      "maxEventLoopGapMs": 169.647,
+      "frameCount": 12,
+      "samples": 562000
+    },
+    {
+      "label": "fixed",
+      "elapsedMs": 121.844,
+      "maxFrameGapMs": 39.179,
+      "maxEventLoopGapMs": 23.049,
+      "frameCount": 18,
+      "samples": 9216
+    },
+    {
+      "label": "fixed-warm",
+      "elapsedMs": 139.428,
+      "maxFrameGapMs": 38.828,
+      "maxEventLoopGapMs": 23.294,
+      "frameCount": 18,
+      "samples": 9216
+    }
+  ]
+}

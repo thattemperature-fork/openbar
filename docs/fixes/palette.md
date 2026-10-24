@@ -94,8 +94,10 @@ Research:
 
 Source: five-second guard drops every subsequent event, including the final
 wallpaper; decoding and quantization run synchronously. Pixel iteration treats
-rows as tightly packed. Palette sort consults indices of an array being sorted,
-then sorts counts independently; short/empty palettes leave stale slots. Shared
+rows as tightly packed. Palette sorting consults indices of the array being
+sorted and then sorts counts independently: replace it with explicit paired
+entries to make the association invariant (a separate sort-only corruption was
+not reproduced). Short/empty palettes leave stale slots. Shared
 counts end up describing the light wallpaper even in dark mode.
 
 Plan: deterministic fake-clock actual-method tests for latest/trailing refresh
@@ -104,3 +106,95 @@ latency measurements before choosing optimization. Correct rowstride and paired
 sort, normalize short output with zero counts, preserve per-mode populations
 without schema churn, and test distinct light/dark sources. Lifecycle methods
 and primary-background manager subscriptions belong to the runtime lane.
+
+### Measurements before choosing the optimization
+
+GJS 1.88.1, real GdkPixbuf decode + production quantizer, deterministic 3840×2160
+noise PNG/JPEG. Initial unmodified pipeline: **201.375/131.044 ms**, event-loop
+stall **201.564/131.144 ms**, 562,000 pixels. Isolated synchronous decode alone:
+**79.093/69.010 ms**. This justified asynchronous stream decoding *and* bounded
+JS sampling, rather than URI-only caching (incorrect for overwritten files).
+Subsequent instrumented baseline: PNG/JPEG quantizer **29.831/29.477 ms**.
+Fixed: **3.222/0.965 ms** quantizer, **80.451/48.342 ms** wall time,
+**21.811/2.262 ms** max loop gap, 9,216 samples. First-run JIT/init still costs
+more than a single 60 Hz frame; there is no claim of zero stutter.
+
+The implementation uses cancellable native async file/stream decoding at a
+256×256 aspect-preserving bound and at most 10,000 sampled pixels. Native decode
+work may remain substantial, but no longer synchronously blocks Shell. This is
+an intentional approximation of the image palette: fine detail/small accents
+can differ from the former 1000px full scan. Quantizer algorithm and filtering
+thresholds are unchanged. No persistent URI cache or worker subprocess is used.
+
+```sh
+# Native decoder + quantizer microbenchmark (GI_TYPELIB_PATH is needed on Nix):
+types=$(nix eval --raw nixpkgs#gdk-pixbuf.out.outPath)/lib/girepository-1.0
+GI_TYPELIB_PATH="$types" nix shell nixpkgs#gjs nixpkgs#gdk-pixbuf \
+  -c gjs -m tests/palette-benchmark.js
+# Optional first argument is a baseline extension.js path, extracted by git show.
+
+# Native compositor frames (same private HOME/dbus/memory settings pattern as README):
+ref=nixpkgs # GNOME 50.4; use pinned ref below for 49.4
+mesa=$(nix eval --raw "$ref#mesa.outPath")
+__EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json" \
+  nix shell "$ref#gnome-shell" "$ref#dbus" "$ref#glib.dev" "$ref#mesa" \
+  -c bash tests/palette-native.sh
+# GNOME 49.4 ref: github:NixOS/nixpkgs/b6018f87da91d19d0ab4cf979885689b469cdd41
+```
+
+Final measured **native after-paint gaps**, software rendering, generated 4K PNG:
+
+| Shell | Baseline wall / max frame gap | Fixed wall / max frame gap | Fixed warm wall / max frame gap |
+|---|---|---|---|
+| 49.4 | 166.084 / 181.951 ms | 107.091 / 29.344 ms | 109.004 / 30.802 ms |
+| 50.4 | 190.330 / 211.094 ms | 197.789 / 40.346 ms | 118.655 / 32.824 ms |
+
+These are individual controlled runs, **not** a hardware FPS guarantee or proof
+that every game/Blur my Shell stutter in #161 is fixed. Fixed end-to-end time is
+not guaranteed lower (50.4 cold was slightly higher); main-thread responsiveness
+is the relevant result. Baseline and fixed execute the real method and quantizer.
+The benchmark does not include stylesheet generation or GTK write latency.
+
+### Regression results
+
+- `nix shell nixpkgs#nodejs -c node tests/palette-wallpaper.mjs`: RED baseline
+  **0 passed/8 failed** (lost final request, unchanged URI, mode transition,
+  burst coalescing, padded rows, mode counts, async generation, empty result).
+  Additional RED cases preceded per-mode count consumption, unobserved settings
+  failures, stale publication during debounce, and a cancelled generation
+  incorrectly starting the other mode's decode. Final **14 passed**.
+- Pause/population tests now **32 passed** (30 previous + 2 per-mode regressions).
+  Color references remain **97 passed**.
+- Native palette tests: **23 assertions** on each **49.4 and 50.4** (the
+  frame-measurement snapshots above were collected with the earlier 21-assertion
+  suite). Real
+  cancellable async reads, distinct mode palettes, real auto-theme application,
+  same-URI file overwrite, padded RGB PPM, mode-count copy, missing-file
+  recovery, trailing native timers, sample bound and native frame cadence.
+- Existing real extension lifecycle: **24 assertions** on each **49.4 and 50.4**,
+  two complete enable/disable cycles and post-disable observation windows.
+  Existing lifecycle code is unchanged by this lane. It does not cancel a
+  deliberately in-flight decode: runtime integration below remains necessary.
+- Native runner rejects logged extension JS exceptions even on exit zero.
+  Expected missing-file warning is visible. Missing CalendarServer/GDM/audio/
+  colord/etc. warnings and GNOME 49 host Fontconfig warnings remain.
+- `node --check` for modified production JS, `bash -n`, `git diff --check` pass.
+
+### Runtime integration request (parent/runtime lane)
+
+Before clearing settings in disable/partial-enable cleanup call
+`this.cancelBackgroundPalette()`. Also call it at the start of enable so an
+older enable generation cannot retain population data, and schedule an initial
+`updateBguri()` even when bguri is nonempty to regenerate per-mode populations
+(no per-mode counts exist in the existing schema). The helper cancels native
+I/O, invalidates publication and clears session counts; it is covered by real
+native and controlled in-flight tests. Existing `updateBguriId` cleanup remains
+sufficient for the single trailing timer; five-second `updatingBguriId` is no
+longer created. Remove that legacy initialization/cleanup in the runtime lane
+if desired. Do **not** move its five-second guard back around the trailing timer.
+
+No enable/disable or connectPrimaryBGChanged edits were made here. In-flight
+results additionally verify their captured settings object and generation before
+publishing, but explicit lifecycle cancellation avoids needless background I/O.
+Per-mode counts are session state, not a schema change; until the initial
+refresh completes persisted legacy shared counts are a compatibility fallback.
