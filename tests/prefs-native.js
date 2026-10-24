@@ -345,6 +345,22 @@ async function resize() {
                 await sleep(20);
             await sleep(100);
             assert(window.get_width() === width, `resize reaches ${width}px at ${dpi}dpi`);
+            const header = descendants(window).find(w => w.has_css_class('openbar-titlegrid'));
+            const [headerMapped, headerBounds] = header.compute_bounds(window);
+            assert(headerMapped && Math.abs(headerBounds.get_x() + headerBounds.get_width() / 2 - width / 2) <= 1,
+                `complete header is centered at ${width}px/${dpi}dpi`);
+            const [boxMapped, boxBounds] = box.compute_bounds(window);
+            assert(boxMapped && Math.abs(boxBounds.get_x() - 16) <= 1 &&
+                Math.abs(width - boxBounds.get_x() - boxBounds.get_width() - 16) <= 1,
+                `gray settings box has symmetric 16px outer side margins at ${width}px/${dpi}dpi`);
+            const [headerLocalMapped, headerLocal] = header.compute_bounds(box.get_parent());
+            const [boxLocalMapped, boxLocal] = box.compute_bounds(box.get_parent());
+            const quote = descendants(window).find(w => w.has_css_class('openbar-quotebox'));
+            const [quoteMapped, quoteLocal] = quote.compute_bounds(box.get_parent());
+            assert(headerLocalMapped && boxLocalMapped && quoteMapped &&
+                boxLocal.get_y() - headerLocal.get_y() - headerLocal.get_height() >= 16 &&
+                quoteLocal.get_y() - boxLocal.get_y() - boxLocal.get_height() >= 16,
+                `gray settings box has top and bottom breathing room at ${width}px/${dpi}dpi`);
             assert(box.get_allocated_width() >= width - 64,
                 `gray settings box uses available window width at ${width}px/${dpi}dpi (got ${box.get_allocated_width()})`);
             for (let i = 0; i < stack.get_pages().get_n_items(); i++) {

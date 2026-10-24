@@ -549,7 +549,7 @@ class OpenbarPrefs {
 
         // Open Bar Title Grid
         let titlegrid = this.createGridWidget();
-        titlegrid.halign = Gtk.Align.START;
+        titlegrid.halign = Gtk.Align.CENTER;
         titlegrid.valign = Gtk.Align.CENTER;
         titlegrid.margin_top = 0;
         titlegrid.margin_bottom = 10;
@@ -2920,7 +2920,13 @@ class OpenbarPrefs {
         viewport.set_child(stack);
         scrollWindow.set_child(viewport);
 
-        let stackBox = new Gtk.Box({css_classes: ['openbar-stack-box']});
+        let stackBox = new Gtk.Box({
+            css_classes: ['openbar-stack-box'],
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 16,
+            margin_bottom: 16,
+        });
         let sideBar = new Gtk.StackSidebar({
             stack: stack,
             css_classes: ['openbar-sidebar'],
