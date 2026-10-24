@@ -27,6 +27,9 @@ export OPENBAR_PREFS_DIR="$dir" OPENBAR_PREFS_REPO="$repo" OPENBAR_PREFS_MODE="$
 mkdir -p "$dir/home" "$dir/run" "$dir/gnome-shell/extensions"
 chmod 700 "$dir/run"
 cp -r "$repo/openbar@neuromorph" "$dir/gnome-shell/extensions/"
+if [ -n "${OPENBAR_PREFS_SOURCE_REF:-}" ]; then
+    git -C "$repo" show "$OPENBAR_PREFS_SOURCE_REF:openbar@neuromorph/prefs.js" > "$dir/gnome-shell/extensions/openbar@neuromorph/prefs.js"
+fi
 printf '\nexport {OpenbarPrefs};\n' >> "$dir/gnome-shell/extensions/openbar@neuromorph/prefs.js"
 glib-compile-schemas "$dir/gnome-shell/extensions/openbar@neuromorph/schemas"
 export HOME="$dir/home" XDG_CONFIG_HOME="$dir/config" XDG_DATA_HOME="$dir/data" XDG_CACHE_HOME="$dir/cache" XDG_RUNTIME_DIR="$dir/run"

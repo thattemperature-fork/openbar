@@ -450,11 +450,9 @@ class OpenbarPrefs {
         let mWidth = this._settings.get_int('monitor-width');
         let mHeight = this._settings.get_int('monitor-height');
 
-        window.default_width = 820; // 825
-        window.default_height = 940; //910
-        let reqWidth = mWidth >= 1000? 815: mWidth - 100;
-        let reqHeight = mHeight >= 1000? 935: mHeight - 100;
-        window.set_size_request(reqWidth, reqHeight); // 815, 885
+        // Defaults are suggestions, not hard minimums: allow small monitors/text scaling.
+        window.default_width = Math.min(1000, mWidth > 0 ? Math.max(360, mWidth - 80) : 900);
+        window.default_height = Math.min(900, mHeight > 0 ? Math.max(360, mHeight - 80) : 700);
 
         window.paletteButtons = [];
         window.colorButtons = [];
@@ -566,8 +564,8 @@ class OpenbarPrefs {
             pixel_size: 90,
             margin_top: 0,
             margin_bottom: 0,
-            margin_start: 35,
-            margin_end: 145,
+            margin_start: 10,
+            margin_end: 20,
             halign: Gtk.Align.START,
             css_classes: ['openbar-image'],
         });
@@ -584,6 +582,8 @@ class OpenbarPrefs {
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
             justify: Gtk.Justification.CENTER,
+            wrap: true,
+            max_width_chars: 38,
             use_markup: true,
             css_classes: [titleClass],
         });
@@ -632,7 +632,7 @@ class OpenbarPrefs {
             use_markup: true,
             justify: Gtk.Justification.CENTER,
             wrap: true,
-            width_chars: 78, //72
+            max_width_chars: 65,
             vexpand: false,
             css_classes: ['openbar-quote'],
         });
@@ -683,7 +683,7 @@ class OpenbarPrefs {
             wrap: true,
             use_markup: true,
             halign: Gtk.Align.START,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         welcomeExpander.set_child(welcomeNotesLabel);
         welcomegrid.attach(welcomeExpander, 1, rowbar, 2, 1);
@@ -727,7 +727,7 @@ class OpenbarPrefs {
             wrap: true,
             use_markup: true,
             halign: Gtk.Align.START,
-            width_chars: 55,
+            max_width_chars: 55,
         });
 
         themesExpander.set_child(autoThemeNotesLabel);
@@ -834,7 +834,7 @@ class OpenbarPrefs {
             wrap: true,
             use_markup: true,
             halign: Gtk.Align.START,
-            width_chars: 55,
+            max_width_chars: 55,
         });
 
         modesExpander.set_child(autoThemeModesLabel);
@@ -1124,7 +1124,7 @@ class OpenbarPrefs {
             label: `<span allow_breaks="true">\n\nNote:\n•  Horizontal and Vertical paddings can be set in <b>Bar Highlights</b> tab.\n•  Accent color can be set in <b>Popup Menus</b> tab.\n•  Bar rounding radius can be set in <b>Bar Border</b> tab.</span>`,
             halign: Gtk.Align.START,
             wrap: true,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         bargrid.attach(barNoteLabel, 1, rowbar, 2, 1);
 
@@ -1153,7 +1153,7 @@ class OpenbarPrefs {
             label: `<span allow_breaks="true">When Window-Max bar is enabled, the following properties will apply to the Bar when a window is maximized.\n</span>`,
             halign: Gtk.Align.START,
             wrap: true,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         bargridwmax.attach(wmaxBarLabel, 1, rowbar, 2, 1);
 
@@ -1397,7 +1397,7 @@ class OpenbarPrefs {
             label: `<span allow_breaks="true">Transparent Bar:\n•  Set Box/Margins Alpha to '0' and also Bar BG Alpha to '0'.\n•  Turn Off Panel Blur in 'Blur My Shell', if applied.\n</span>`,
             halign: Gtk.Align.START,
             wrap: true,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         bggrid.attach(barBGNoteLabel, 1, rowbar, 2, 1);
 
@@ -2188,7 +2188,7 @@ class OpenbarPrefs {
             halign: Gtk.Align.CENTER,
             wrap: true,
             margin_bottom: 10,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         dashgrid.attach(dashInfoLabel, 1, rowbar, 2, 1);
 
@@ -2301,7 +2301,7 @@ class OpenbarPrefs {
             use_markup: true,
             halign: Gtk.Align.CENTER,
             wrap: true,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         beyondgrid.attach(beyondLabel, 1, rowbar, 2, 1);
 
@@ -2380,7 +2380,7 @@ class OpenbarPrefs {
             halign: Gtk.Align.START,
             wrap: true,
             margin_top: 10,
-            width_chars: 55,
+            max_width_chars: 55,
         });
         appgrid.attach(appInfoLabel, 1, rowbar, 2, 1);
 
@@ -2867,18 +2867,20 @@ class OpenbarPrefs {
         //               Quote Box
 
         const scrollWindow = new Gtk.ScrolledWindow({
-            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            hscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+            hexpand: true,
+            vexpand: true,
             vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
             css_classes: ['openbar-scroll'],
         });
 
         let stack = new Gtk.Stack({
             transition_type: Gtk.StackTransitionType.NONE,//ROTATE_LEFT_RIGHT,
-            hhomogeneous: true,
+            hhomogeneous: false,
             vhomogeneous: false,
             valign: Gtk.Align.CENTER,
-            halign: Gtk.Align.CENTER,
-            // vexpand: true,
+            halign: Gtk.Align.FILL,
+            hexpand: true,
             css_classes: ['openbar-stack'],
         });
         // Add pages to the stack
@@ -2896,7 +2898,13 @@ class OpenbarPrefs {
         stack.add_titled(appgrid, 'gtkflatpak',     '⌘   Gtk / Flatpak Apps');
         stack.add_titled(iegrid, 'importexport',    '⧉   Settings Admin');
 
-        scrollWindow.set_child(stack);
+        // Explicit viewport preserves native control widths on older GTK as well.
+        const viewport = new Gtk.Viewport({
+            hscroll_policy: Gtk.ScrollablePolicy.NATURAL,
+            scroll_to_focus: true,
+        });
+        viewport.set_child(stack);
+        scrollWindow.set_child(viewport);
 
         let stackBox = new Gtk.Box({css_classes: ['openbar-stack-box']});
         let sideBar = new Gtk.StackSidebar({

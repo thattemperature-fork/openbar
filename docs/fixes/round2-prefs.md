@@ -36,3 +36,26 @@ Coverage: real disposable export/import bytes, full schema roundtrip, default va
 
 Sources: [Gio.Subprocess communicate](https://docs.gtk.org/gio/method.Subprocess.communicate_utf8_async.html), [Gio.File replacement](https://docs.gtk.org/gio/method.File.replace_contents_async.html), [GApplication hold](https://docs.gtk.org/gio/method.Application.hold.html).
 
+## 3. Large-text and small-window layout
+
+Root cause: hard monitor-derived minimum size, fixed character widths/image margins, a homogeneous centered stack and horizontal scrolling disabled. The native outer content could extend beyond the compositor-clamped window; increasing the default height did not fix this. Audit measurements using `get_width()` versus GTK minimums must account for CSS padding: use `get_allocated_width()` for the like-for-like comparison. The outer bounds failure is independently reproduced, not inferred only from mismatched measurement APIs.
+
+Plan/implementation: monitor-bounded suggested sizes rather than hard requests; reduce header whitespace and wrap title/quote/introduction labels; use per-page stack width, filling the available viewport. Preserve existing native controls and page/sidebar layout. Provide horizontal scrolling with an explicit natural-width Gtk.Viewport and scroll-to-focus so controls never shrink below their native requisition. The explicit viewport is needed on GTK4.18/4.20; automatic wrapping alone still allocated the stack below native minimum there. Small windows intentionally scroll oversized page controls rather than clipping or migrating all rows/widgets.
+
+`bash tests/prefs-native.sh layout` calls the actual exported `fillPreferencesWindow`, sets 120dpi (125% of96), selects GTK/Flatpak, measures outer bounds and CSS-inclusive native allocation, checks each of the 13 pages at 820px and 640px, and writes `layout.json`. RED before fix: `openbar-prefs.aKTs7J`; replay against previous source with corrected padding-aware assertion: `OPENBAR_PREFS_SOURCE_REF=917045f bash tests/prefs-native.sh layout`, artifact `openbar-prefs.Ewafwg`, fails outer stack bounds. This source-ref override only replaces the disposable source copy, not the worktree. Initial older-runtime RED `openbar-prefs.udXELp`/`openbar-prefs.1dmdFA` demonstrated need for explicit viewport.
+
+Final native results (all paths under `/var/lib/hermes/.hermes/cache/scratch/`):
+
+| Runtime | lifecycle | transactions | layout |
+|---|---|---|---|
+| Shell50 / GTK4.22.4 | `openbar-prefs.pcHQUO` | `openbar-prefs.nKZb1M` | `openbar-prefs.rNq4ly` |
+| Shell49.4 / GTK4.20.3 | `openbar-prefs.nX0znZ` | `openbar-prefs.LSzjUI` | `openbar-prefs.WPjsju` |
+| Shell48.3.1 / GTK4.18.6 | `openbar-prefs.GMZZvO` | `openbar-prefs.o1TaOv` | `openbar-prefs.eOjfeu` |
+
+All have post-assertion success markers; no uncaught preferences exceptions. GTK4.22 at125%: GTK/Flatpak native minimum481/natural664, allocated664, scroll viewport482; controls are fully reachable. Older GTK minimum516/natural724, allocated724, viewport463. Native title/quote/stack-box remain within820px and640px window bounds. No Adwaita allocation-overflow warnings in final layout runs. Limits: not a pixel-aesthetic review, every locale or physical fractional monitor scale. The keyboard-focus scrolling property is enabled but physical input navigation is not certified.
+
+Sources: [GTK Viewport horizontal policy](https://docs.gtk.org/gtk4/property.Scrollable.hscroll-policy.html), [Gtk.Label max-width-chars](https://docs.gtk.org/gtk4/property.Label.max-width-chars.html), [upstream large-text issue98](https://github.com/neuromorph/openbar/issues/98).
+
+## Preserved baseline regression suites
+
+The unchanged `tests/run-native-regressions.sh` passed its entire combined native matrix at the final preferences source (Shell50.4). Representative first/last artifacts `openbar-integration.kSHrFC` and `openbar-integration.rqDx1D`; all intermediate exact paths are in the terminal execution output. The unchanged `tests/run-write-tests.sh` passed all23 filesystem cases: `openbar-writes.uhS4g5`. First attempt lacked Pango typelibs (`openbar-writes.mFzZyH`), then rerun with coherent Pango/Harfbuzz/GI typelibs passed. Existing combined runner and all other production modules are unchanged.

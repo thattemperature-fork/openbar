@@ -178,11 +178,49 @@ async function transactions() {
     const config = GLib.getenv('XDG_CONFIG_HOME');
     assert(config.startsWith(dir) && Gio.File.new_for_path(`${config}/dconf/user`).query_exists(null), 'real dconf database exists only in disposable private config');
 }
+async function layout() {
+    Gtk.Settings.get_default().gtk_xft_dpi = 120 * 1024;
+    const window = new Adw.PreferencesWindow();
+    extension.fillPreferencesWindow(window);
+    window.present(); await sleep(350);
+    const stack = descendants(window).find(w => w instanceof Gtk.Stack && w.get_child_by_name('gtkflatpak'));
+    const scroll = descendants(window).find(w => w instanceof Gtk.ScrolledWindow && w.has_css_class('openbar-scroll'));
+    stack.set_visible_child_name('gtkflatpak'); await sleep(500);
+    const stackBox = descendants(window).find(w => w.has_css_class('openbar-stack-box'));
+    const [hasBounds, stackBounds] = stackBox.compute_bounds(window);
+    assert(hasBounds && stackBounds.get_x() >= 0 && stackBounds.get_x() + stackBounds.get_width() <= window.get_width(), '125% text stack region fits inside the window');
+    print(JSON.stringify({stackWidth: stack.get_allocated_width(), minimum: stack.measure(Gtk.Orientation.HORIZONTAL, -1), scrollWidth: scroll.get_width(), scrollUpper: scroll.get_hadjustment().upper, window: window.get_width()}));
+    assert(stack.get_allocated_width() >= stack.measure(Gtk.Orientation.HORIZONTAL, -1)[0], '125% text content never allocated below native minimum');
+    assert(scroll.get_policy()[0] === Gtk.PolicyType.AUTOMATIC, 'oversized native controls have horizontal-scroll fallback');
+    print(JSON.stringify(descendants(window).filter(w => w.has_css_class('openbar-sidebar') || w.has_css_class('openbar-scroll')).map(w => ({type: w.constructor.name, min: w.measure(Gtk.Orientation.HORIZONTAL, -1), width:w.get_allocated_width()}))));
+    const measurements = [];
+    for (const width of [820, 640]) {
+        window.set_default_size(width, 600); await sleep(400);
+        print(JSON.stringify({requested:width, actual:window.get_width(), min:window.measure(Gtk.Orientation.HORIZONTAL,-1)}));
+        assert(window.get_width() <= width, `preferences can shrink to ${width}px`);
+        for (let i = 0; i < stack.get_pages().get_n_items(); i++) {
+            const page = stack.get_pages().get_item(i);
+            stack.set_visible_child(page.child); await sleep(35);
+            const minimum = stack.measure(Gtk.Orientation.HORIZONTAL, -1)[0];
+            const adjustment = scroll.get_hadjustment();
+            measurements.push({width: window.get_width(), page: page.name, allocated: stack.get_allocated_width(), minimum, upper: adjustment.upper, viewport: adjustment.page_size});
+            assert(stack.get_allocated_width() >= minimum && adjustment.upper >= stack.get_allocated_width() - 1, `native ${page.name} controls reachable at ${width}px`);
+        }
+        for (const css of ['openbar-titlegrid', 'openbar-quotebox', 'openbar-stack-box']) {
+            const widget = descendants(window).find(w => w.has_css_class(css));
+            const [ok, bounds] = widget.compute_bounds(window);
+            assert(ok && bounds.get_x() >= -1 && bounds.get_x() + bounds.get_width() <= window.get_width() + 1, `${css} stays inside window at ${width}px`);
+        }
+    }
+    GLib.file_set_contents(`${dir}/layout.json`, JSON.stringify(measurements, null, 2));
+    window.destroy();
+}
 async function main() {
     await setup();
     print(`GTK ${Gtk.get_major_version()}.${Gtk.get_minor_version()}.${Gtk.get_micro_version()}`);
     settings.set_int('monitor-width', 1024); settings.set_int('monitor-height', 768);
     if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions') await transactions();
+    else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'layout') await layout();
     else await lifecycle();
     print('PASS preferences native regression complete');
 }
