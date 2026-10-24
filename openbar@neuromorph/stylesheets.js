@@ -1915,6 +1915,7 @@ function getStylesheet(obar, Me) {
         }
 
         #panel${openbarClass}:windowmax {
+            background-gradient-direction: none !important;
             border-radius: 0px !important;
             border-width: 0px !important;
             box-shadow: none !important;
@@ -1940,7 +1941,7 @@ function getStylesheet(obar, Me) {
             ${unlockStyle}
         }
         #panel${openbarClass}:windowmax .panel-button {
-            ${btnBgWMax? '': 'background-color: transparent !important;'}
+            ${btnBgWMax? '': 'background-color: transparent !important; background-gradient-direction: none !important;'}
             ${borderWMax? '': `border-color: rgba(${bgredwmax},${bggreenwmax},${bgbluewmax},${bgalphaWMax});`}
             ${neonWMax? '': 'box-shadow: none;'}
             ${wmaxColorStyle}

@@ -101,3 +101,31 @@ assertions pass on each version (`openbar-widgets.dLERMB` 49,
 on 49.4 (`openbar-menu-test.6LLPbi`). Existing ordinary-menu compound pseudo
 fixtures use colon-separated strings, so that old suite's compound-state
 coverage should not be overstated; the new widget suite uses correct lists.
+
+## 13 — Window-max gradient reset
+
+Researched [#163](https://github.com/neuromorph/openbar/issues/163): Islands
+end color remains when Keep Button Color is disabled (reported GNOME 46).
+Tagged [49.4 St theme-node source](https://github.com/GNOME/gnome-shell/blob/49.4/src/st/st-theme-node.c)
+and [50.4](https://github.com/GNOME/gnome-shell/blob/50.4/src/st/st-theme-node.c)
+parse `background-color` independently of `background-gradient-direction`;
+`none` sets `ST_GRADIENT_NONE`. Merely clearing color leaves gradient rendering
+active. The start property shares the background-color storage, while the end
+color is separate: removing the gradient *direction* is the correct reset,
+not replacing a currently selected solid color with transparent gradient stops.
+
+Plan/fix: reset the panel gradient in windowmax mode for Mainland/Floating;
+reset button gradients only when `buttonbg-wmax` is false for Islands/Trilands.
+Keep configured gradients when that option is true; normal-state CSS restores
+original gradients after removing the windowmax pseudo class.
+
+RED: native GNOME 50.4 theme-node gradient remained `HORIZONTAL (2)` instead of
+`NONE (0)` for Islands, gradient=true/keep=false, before CSS edits. Artifact:
+`$TMPDIR/openbar-widgets.z6c7B4`.
+GREEN: `widgets-run.sh gradient`, **128 assertions on each of 49.4/50.4**;
+artifacts `openbar-widgets.nKTc8B` / `openbar-widgets.5hZiEj`.
+All four bar types × gradient on/off × buttonbg-wmax on/off, windowmax
+add/remove transitions, selected solid panel color/alpha, transparent button
+background, reset persistence under hover/focus/active/checked are covered.
+This is an actual compositor/St CSS reproduction, not a real application's
+maximize event/animation test. No interactive maximize claim.

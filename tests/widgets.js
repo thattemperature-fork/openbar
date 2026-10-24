@@ -74,6 +74,49 @@ async function tests() {
     const root = new St.BoxLayout({vertical: true, width: 700, height: 500});
     Main.uiGroup.add_child(root);
     try {
+        if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'gradient') {
+            // Exercise real theme-node pseudo-class transitions with all bar layouts.
+            root.hide();
+            settings.set_string('gradient-direction', 'horizontal');
+            settings.set_boolean('wmax-hbarhint', false);
+            settings.set_strv('bgcolor-wmax', ['0.2', '0.3', '0.4']);
+            settings.set_double('bgalpha-wmax', 0.8);
+            const panel = new St.BoxLayout({name: 'panel', style_class: 'openbar', width: 700});
+            const container = new St.Bin({style_class: 'button-container'});
+            const button = new St.Button({style_class: 'panel-button', label: 'Window max'});
+            container.set_child(button); panel.add_child(container); Main.uiGroup.add_child(panel);
+            try {
+                for (const bartype of ['Islands', 'Trilands', 'Mainland', 'Floating']) {
+                    settings.set_string('bartype', bartype);
+                    panel.set_style_class_name(bartype === 'Trilands' ? 'openbar trilands' : 'openbar');
+                    for (const gradient of [false, true]) {
+                        settings.set_boolean('gradient', gradient);
+                        for (const keepButtons of [false, true]) {
+                            settings.set_boolean('buttonbg-wmax', keepButtons);
+                            reload();
+                            panel.set_style_pseudo_class('');
+                            const normal = [panel.get_theme_node().get_background_gradient()[0], button.get_theme_node().get_background_gradient()[0]];
+                            const island = bartype === 'Islands' || bartype === 'Trilands';
+                            equal(normal, [gradient && !island ? St.GradientType.HORIZONTAL : St.GradientType.NONE,
+                                gradient && island ? St.GradientType.HORIZONTAL : St.GradientType.NONE], `normal gradient ${bartype}`);
+                            panel.set_style_pseudo_class('windowmax');
+                            equal(panel.get_theme_node().get_background_gradient()[0], St.GradientType.NONE, `max panel clears gradient ${bartype}`);
+                            equal(bg(panel), '#334c66cc', `max panel uses solid selected color ${bartype}`);
+                            if (!keepButtons) equal(bg(button), '#00000000', `max button transparent ${bartype}`);
+                            equal(button.get_theme_node().get_background_gradient()[0], gradient && island && keepButtons ? St.GradientType.HORIZONTAL : St.GradientType.NONE,
+                                `max button gradient ${bartype} gradient=${gradient} keep=${keepButtons}`);
+                            for (const state of ['', 'hover', 'focus', 'active', 'checked']) {
+                                button.set_style_pseudo_class(state);
+                                if (!keepButtons) equal(button.get_theme_node().get_background_gradient()[0], St.GradientType.NONE, `max reset persists ${state}`);
+                            }
+                            button.set_style_pseudo_class('');
+                            panel.set_style_pseudo_class('');
+                            equal([panel.get_theme_node().get_background_gradient()[0], button.get_theme_node().get_background_gradient()[0]], normal, 'unmaximize restores gradient');
+                        }
+                    }
+                }
+            } finally { panel.destroy(); }
+        }
         if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'switches') {
             for (const mode of ['scoped', 'menu-global', 'accent-global']) {
                 settings.set_boolean('menustyle', mode !== 'accent-global');
