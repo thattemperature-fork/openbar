@@ -1,3 +1,34 @@
+## Combined pending-fix regression matrix
+
+The research, individual fix plans, regressions and limitations for TODO items
+1–14 are under `docs/fixes/`. `docs/fixes/reports.md` keeps historical unresolved
+reports distinct from reproduced JS and application-provider failures.
+
+Run the combined native matrix from a matching Nix environment (do not attach
+to a live desktop):
+
+```sh
+ref=nixpkgs
+# GNOME 49.4 alternative:
+# ref=github:NixOS/nixpkgs/b6018f87da91d19d0ab4cf979885689b469cdd41
+mesa=$(nix eval --raw "$ref#mesa.outPath")
+icons=$(nix eval --raw "$ref#adwaita-icon-theme.outPath")
+XDG_DATA_DIRS="$icons/share:${XDG_DATA_DIRS:-}" \
+__EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json" \
+  nix shell "$ref#gnome-shell" "$ref#dbus" "$ref#glib.dev" "$ref#glib.bin" \
+    "$ref#mesa" "$ref#gjs" "$ref#adwaita-icon-theme" \
+    -c bash tests/run-native-regressions.sh
+```
+
+`glib.bin` provides `gdbus`, needed for external notification transport;
+Adwaita's `share` path is needed for the native symbolic media-icon fallback.
+Missing either dependency is a harness failure, not an Open Bar bug. Tests use
+scratch only, preserve artifacts and reject extension exceptions even on exit 0.
+The original ordinary-menu compound pseudo-class fixtures were corrected from
+colon-separated CSS syntax to St's space-separated names during this work.
+Its previous historical results below do not imply those compound states were
+validly exercised at that time.
+
 # Dynamic panel menu regression tests
 
 ## Modern DateMenu and whole-root follow-ups

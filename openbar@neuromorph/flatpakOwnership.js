@@ -44,7 +44,7 @@ export async function updateFlatpakOverrides(owner, apply) {
     const hasKey = keyfile.has_group('Context') && keyfile.get_keys('Context')[0].includes('filesystems');
     const tokens = hasKey ? keyfile.get_string_list('Context', 'filesystems').filter(Boolean) : [];
     if (!record) record = {added: new Set(), blocked: new Set(), hadKey: hasKey};
-    const next = {added: new Set(record.added), blocked: new Set(record.blocked), hadKey: record.hadKey};
+    const next = {added: new Set(record.added), blocked: new Set(record.blocked), hadKey: record.hadKey ?? hasKey};
     // An externally removed/changed/duplicated permission no longer belongs to
     // us. Do not resurrect it on the next enable or remove its replacement.
     for (const token of next.added) {
@@ -80,6 +80,10 @@ export async function updateFlatpakOverrides(owner, apply) {
         await replaceFile(file, output, null, etag);
     }
     if (apply) owners.set(owner, next);
-    else owners.delete(owner);
+    else if (next.blocked.size) {
+        // Retain relinquished scopes for this instance, not additions that we
+        // successfully removed. A new cycle snapshots its own key presence.
+        owners.set(owner, {added: new Set(), blocked: next.blocked, hadKey: null});
+    } else owners.delete(owner);
     return changed;
 }

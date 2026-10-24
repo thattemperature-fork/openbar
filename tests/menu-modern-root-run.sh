@@ -2,7 +2,7 @@
 set -eu
 repo=$(cd "$(dirname "$0")/.." && pwd)
 : "${TMPDIR:?Set TMPDIR to disposable scratch}"
-dir=$(mktemp -d "$repo/.menu-modern-root.XXXXXX")
+dir=$(mktemp -d "$TMPDIR/openbar-menu-modern-root.XXXXXX")
 export OPENBAR_TEST_DIR="$dir"
 mkdir -m 700 "$dir/run" "$dir/home"
 cp -R "$repo/openbar@neuromorph" "$dir/openbar@neuromorph"

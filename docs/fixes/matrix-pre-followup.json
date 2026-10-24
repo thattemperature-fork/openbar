@@ -1,0 +1,198 @@
+[
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.L5c4PM",
+    "result": "PASS Shell 49.4: integration: 26 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.tf91e1",
+    "result": "PASS Shell 49.4: runtime: 26 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.EyDRO0",
+    "result": "{\n  \"shell\": \"49.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 205.557,\n      \"maxFrameGapMs\": 223.316,\n      \"maxEventLoopGapMs\": 206.567,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 152.505,\n      \"maxFrameGapMs\": 22.791,\n      \"maxEventLoopGapMs\": 14.212,\n      \"frameCount\": 21,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 101.663,\n      \"maxFrameGapMs\": 23.226,\n      \"maxEventLoopGapMs\": 11.961,\n      \"frameCount\": 18,\n      \"samples\": 9216\n    }\n  ]\n}",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.wiauPm",
+    "result": "PASS: 1319 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.g68uXp",
+    "result": "PASS Shell 49.4: menu-modern: 46 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.mE7tuc",
+    "result": "PASS Shell 49.4: menu-modern-root: 60 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.7PTRxP",
+    "result": "PASS Shell 49.4: date-menu: 9 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.gD69F5",
+    "result": "PASS Shell 49.4: lifecycle: 24 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.GZRp5D",
+    "result": "PASS: GNOME 49.4 quick: 768 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.7ax6Cz",
+    "result": "PASS: GNOME 49.4 switches: 708 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.V1MR3y",
+    "result": "PASS: GNOME 49.4 gradient: 128 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.A98qHi",
+    "result": "PASS: GNOME 49.4 fitts: 32 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.2o1YYm",
+    "result": "PASS: GNOME 49.4 fitts-lifecycle: 12 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.9zfjzb",
+    "result": "PASS: GNOME 49.4 fitts-session: 12 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.jjELED",
+    "result": "PASS Shell 50.4: integration: 26 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.rptgil",
+    "result": "PASS Shell 50.4: runtime: 26 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.qYIWrR",
+    "result": "{\n  \"shell\": \"50.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 188.444,\n      \"maxFrameGapMs\": 203.907,\n      \"maxEventLoopGapMs\": 188.666,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 141.727,\n      \"maxFrameGapMs\": 32.128,\n      \"maxEventLoopGapMs\": 23.57,\n      \"frameCount\": 19,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 182.238,\n      \"maxFrameGapMs\": 35.536,\n      \"maxEventLoopGapMs\": 22.908,\n      \"frameCount\": 22,\n      \"samples\": 9216\n    }\n  ]\n}",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.DvpO5g",
+    "result": "PASS: 1319 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.9iAH2m",
+    "result": "PASS Shell 50.4: menu-modern: 46 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.nTPGsJ",
+    "result": "PASS Shell 50.4: menu-modern-root: 60 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.aERQzr",
+    "result": "PASS Shell 50.4: date-menu: 9 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.7ELRky",
+    "result": "PASS Shell 50.4: lifecycle: 24 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.X3yOsh",
+    "result": "PASS: GNOME 50.4 quick: 768 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.t63mie",
+    "result": "PASS: GNOME 50.4 switches: 708 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.W1tBk6",
+    "result": "PASS: GNOME 50.4 gradient: 128 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.5ZiSrv",
+    "result": "PASS: GNOME 50.4 fitts: 32 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.8IuFtr",
+    "result": "PASS: GNOME 50.4 fitts-lifecycle: 8 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.2EbyRl",
+    "result": "PASS: GNOME 50.4 fitts-session: 12 assertions",
+    "extension_errors": [],
+    "scope": "pre-review-followup combined matrix; initial integration fixture has known queued-only race coverage"
+  }
+]

@@ -28,7 +28,7 @@ export function fixture() {
         Meta: {WorkspaceManager: class {}, Display: class {}, Window: class {}}, LayoutManager: {LayoutManager: Layout},
         Extension: class {}, Calendar: {Calendar: class {}}, Clutter: {ActorAlign: {START: 0}},
         AutoThemes: {getClosestGnomeAccent: () => 'red', getClosestYaruTheme: () => 'red'},
-        StyleSheets: {saveGtkCss() {}, saveFlatpakOverrides() {}, reloadStyle() {}},
+        StyleSheets: {beginStyleWrites() {}, invalidateStyleWrites() {return Promise.resolve();}, saveGtkCss() {}, saveFlatpakOverrides() {}, reloadStyle() {}},
         PanelMenu: {Button: class {}, ButtonBox: class {}},
         setTimeout(fn) {const id = next++; timers.set(id, fn); return id;}, clearTimeout(id) {timers.delete(id);}};
     vm.createContext(context);

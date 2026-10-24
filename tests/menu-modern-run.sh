@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Native DateMenu and real private-bus transport, never the user's desktop.
 set -eu
+# gdbus (glib.bin on Nix) is required for the external transport smoke test.
+command -v gdbus >/dev/null
 repo=$(cd "$(dirname "$0")/.." && pwd)
 : "${TMPDIR:?Set TMPDIR to a disposable scratch directory}"
-dir=$(mktemp -d "$repo/.menu-modern-run.XXXXXX")
+dir=$(mktemp -d "$TMPDIR/openbar-menu-modern.XXXXXX")
 export OPENBAR_TEST_DIR="$dir"
 mkdir -m 700 "$dir/run" "$dir/home" "$dir/schemas" "$dir/assets"
 cp "$repo/openbar@neuromorph/media/assets/"*.svg "$dir/assets/"

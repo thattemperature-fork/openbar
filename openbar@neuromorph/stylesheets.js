@@ -29,6 +29,26 @@ import {updateFlatpakOverrides} from './flatpakOwnership.js';
 export function beginStyleWrites(obar) { beginWrites(obar); }
 export function invalidateStyleWrites(obar) { return invalidateWrites(obar); }
 
+export function prepareRuntimeAssets(obar) {
+    const source = Gio.File.new_for_path(`${obar.path}/media/assets`);
+    const destination = obar.obarAssetsDir;
+    return queueStyleWrite(obar, async (cancellable, current) => {
+        const iterator = source.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+        try {
+            for (const info of iterator) {
+                if (!current()) return false;
+                await source.get_child(info.get_name()).copy_async(destination.get_child(info.get_name()),
+                    Gio.FileCopyFlags.OVERWRITE | Gio.FileCopyFlags.TARGET_DEFAULT_PERMS,
+                    GLib.PRIORITY_DEFAULT, cancellable, null);
+            }
+        } finally {
+            iterator.close(null);
+        }
+        return current();
+    });
+}
+
+Gio._promisify(Gio.File.prototype, 'copy_async', 'copy_finish');
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
 Gio._promisify(Gio.File.prototype, 'move_async', 'move_finish');
 Gio._promisify(Gio.File.prototype, 'delete_async', 'delete_finish');
@@ -901,7 +921,7 @@ function gtkSnapshot(obar, caller) {
     return {applyGtk, gtkStrings: applyGtk ? [createGtkCss(obar, 0), createGtkCss(obar, 1)] : []};
 }
 
-export function saveGtkCss(obar, caller) {
+export async function saveGtkCss(obar, caller) {
     const snapshot = gtkSnapshot(obar, caller);
     if (!snapshot) return Promise.resolve(false);
     return queueStyleWrite(obar, () => applyGtkCss(obar, snapshot), {cleanup: caller === 'disable'});
@@ -2332,9 +2352,11 @@ function getStylesheet(obar, Me) {
                 color: rgba(${amhfgred},${amhfggreen},${amhfgblue},1.0) !important;
             }
 
+            ${obar.gnomeVersion < 47 ? `
             ${openmenuClass}.popup-menu-item .toggle-switch:checked {
                 color: rgba(${mfgred},${mfggreen},${mfgblue},1.0) !important;
             }
+            ` : ''}
             ${openmenuClass}.popup-menu-item .button {
                 color: rgba(${smfgred},${smfggreen},${smfgblue},1.0) !important;
                 background-color: rgba(${smbgred},${smbggreen},${smbgblue},${mbgAlpha}) !important;
@@ -3771,16 +3793,18 @@ async function writeSVGs(snapshot, Me, cancellable, current) {
     if (current()) await saveCalEventSVG(snapshot, Me, cancellable);
 }
 
-export function reloadStyle(obar, Me) {
+export async function reloadStyle(obar, Me) {
     const settings = obar._settings;
     if (!settings || settings.get_boolean('import-export') || settings.get_boolean('pause-reload'))
         return Promise.resolve(false);
     // All settings/generator work happens before the first asynchronous turn.
     const stylesheet = getStylesheet(obar, Me);
-    const snapshot = {obarRunDir: obar.obarRunDir, msHex: obar.msHex,
+    const snapshot = {obarRunDir: obar.obarRunDir, assetsReady: obar._runtimeAssetsReady, msHex: obar.msHex,
         mhHex: obar.mhHex, smfgHex: obar.smfgHex};
     const gtk = obar.gtkCSS ? gtkSnapshot(obar, 'enable') : null;
     return queueStyleWrite(obar, async (cancellable, current) => {
+        if (snapshot.assetsReady && !await snapshot.assetsReady) return false;
+        if (!current()) return false;
         await replaceFile(snapshot.obarRunDir.get_child('stylesheet.css'), stylesheet, cancellable);
         if (!current()) return false;
         await writeSVGs(snapshot, Me, cancellable, current);

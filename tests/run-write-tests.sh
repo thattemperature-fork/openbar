@@ -8,9 +8,9 @@ mkdir -p "$root/schemas"
 cp "$repo/openbar@neuromorph/schemas/"*.xml "$root/schemas/"
 glib-compile-schemas "$root/schemas"
 if [ "$#" -eq 0 ]; then
-    set -- gtk-completion reload-completion reload-failure stale-disable active-disable latest-generation \
-        gtk-backup-failure gtk-restore gtk-edits gtk-symlink gtk-backup-edit gtk-original-bytes \
-        flatpak-repeat flatpak-missing-key flatpak-user-changes flatpak-user-removal \
+    set -- gtk-completion reload-completion reload-failure snapshot-rejection stale-disable active-disable latest-generation \
+        gtk-backup-failure gtk-restore gtk-restore-unlink gtk-edits gtk-symlink gtk-backup-edit gtk-original-bytes \
+        flatpak-repeat flatpak-missing-key flatpak-user-changes flatpak-user-removal flatpak-revoked-cycle \
         flatpak-no-file flatpak-symlink flatpak-write-failure flatpak-disable-active
 fi
 for test in "$@"; do

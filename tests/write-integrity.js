@@ -2,10 +2,17 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Styles from '../openbar@neuromorph/stylesheets.js';
+import {updateGtkFile} from '../openbar@neuromorph/gtkOwnership.js';
 
 const root = GLib.getenv('OPENBAR_WRITE_TEST_DIR');
 if (!root || !root.startsWith(`${GLib.getenv('TMPDIR')}/`))
     throw new Error('Disposable TMPDIR test root required');
+// Refuse direct invocation with a scratch marker but live user directories.
+if (GLib.getenv('GSETTINGS_BACKEND') !== 'memory' ||
+    GLib.getenv('HOME') !== `${root}/home` || GLib.get_home_dir() !== `${root}/home` ||
+    GLib.getenv('XDG_CONFIG_HOME') !== `${root}/config` || GLib.get_user_config_dir() !== `${root}/config` ||
+    GLib.getenv('XDG_DATA_HOME') !== `${root}/data` || GLib.get_user_data_dir() !== `${root}/data`)
+    throw new Error('Private HOME/config/data and memory settings required');
 const schema = Gio.SettingsSchemaSource.new_from_directory(`${root}/schemas`, Gio.SettingsSchemaSource.get_default(), false);
 function fixture(name) {
     const dir = `${root}/${name}`;
@@ -68,6 +75,29 @@ if (test === 'gtk-completion') {
     try { await Styles.reloadStyle(obar, null); } catch (_) { failed = true; }
     assert(failed, 'write failure must reject');
     assert(published === 0, 'failed writes must not publish reload');
+} else if (test === 'snapshot-rejection') {
+    const outcomes = [];
+    for (const name of ['reloadStyle', 'saveGtkCss']) {
+        const obar = fixture(`${test}-${name}`);
+        obar._settings.set_boolean('apply-gtk', true);
+        const failure = new Error(`snapshot failed for ${name}`);
+        let captured = false, synchronous = null, caught = null;
+        // A settings failure is not an I/O failure; real fixture/settings and
+        // filesystem are used, with only the throwing snapshot getter injected.
+        obar._settings.get_strv = () => { captured = true; throw failure; };
+        let pending;
+        try {
+            pending = Styles[name](obar, name === 'saveGtkCss' ? 'enable' : null);
+        } catch (error) {
+            synchronous = error;
+        }
+        const capturedBeforeReturn = captured;
+        if (pending?.catch) await pending.catch(error => { caught = error; });
+        outcomes.push({name, failure, synchronous, caught, capturedBeforeReturn});
+    }
+    assert(outcomes.every(result => result.synchronous === null && result.caught === result.failure),
+        `snapshot failures must reject the exported promise, not throw synchronously: ${outcomes.map(result => `${result.name} sync=${Boolean(result.synchronous)} catch=${Boolean(result.caught)}`).join(', ')}`);
+    assert(outcomes.every(result => result.capturedBeforeReturn), 'snapshot capture must remain synchronous before returning the promise');
 } else if (test === 'stale-disable') {
     const obar = fixture(test);
     let published = 0;
@@ -124,6 +154,63 @@ if (test === 'gtk-completion') {
         const dir = `${GLib.get_user_config_dir()}/gtk-${version}.0`;
         assert(read(`${dir}/gtk.css`) === `original ${version}`, 'restore must preserve exact original');
         assert(!GLib.file_test(`${dir}/gtk_backup_byOpenBar.css`, GLib.FileTest.EXISTS), 'restore consumes only owned backup');
+    }
+} else if (test === 'gtk-restore-unlink') {
+    const obar = fixture(test);
+    for (const retry of ['disable', 'enable', 'target-edit', 'backup-edit']) {
+        const path = `${GLib.get_user_config_dir()}/gtk-${retry}`;
+        const dir = Gio.File.new_for_path(path);
+        dir.make_directory(null);
+        GLib.file_set_contents(`${path}/gtk.css`, 'original');
+        await updateGtkFile(obar, dir, 'generated');
+        // Let the real atomic restore commit, then deny the real backup unlink.
+        // No Gio success/error is fabricated; only callback delivery is wrapped.
+        const original = Gio.File.prototype.replace_contents_bytes_async;
+        let chmodResult = null, failure = null;
+        Gio.File.prototype.replace_contents_bytes_async = function (...args) {
+            if (this.get_path() === `${path}/gtk.css`) {
+                const callback = args.at(-1);
+                args[args.length - 1] = (object, result) => {
+                    chmodResult = GLib.chmod(path, 0o500);
+                    callback(object, result);
+                };
+            }
+            return original.apply(this, args);
+        };
+        try {
+            await updateGtkFile(obar, dir, null);
+        } catch (error) {
+            failure = error;
+        } finally {
+            Gio.File.prototype.replace_contents_bytes_async = original;
+            assert(GLib.chmod(path, 0o700) === 0, 'restore directory permissions for disposable cleanup');
+        }
+        assert(chmodResult === 0, 'permission fault must be applied after real restore');
+        assert(failure?.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.PERMISSION_DENIED), 'real backup unlink must fail with permission denied (run unprivileged)');
+        assert(read(`${path}/gtk.css`) === 'original', 'restore has already committed before unlink failure');
+        assert(read(`${path}/gtk_backup_byOpenBar.css`) === 'original', 'failed unlink leaves recovery backup');
+        if (retry === 'disable') {
+            await updateGtkFile(obar, dir, null);
+            await updateGtkFile(obar, dir, null);
+            assert(read(`${path}/gtk.css`) === 'original', 'cleanup retry must not classify committed restore as external edit');
+            assert(!dir.get_child('gtk_backup_byOpenBar.css').query_exists(null), 'retry consumes pending owned backup');
+        } else if (retry === 'enable') {
+            await updateGtkFile(obar, dir, 'generated-again');
+            assert(read(`${path}/gtk.css`) === 'generated-again', 'new enable can finish pending cleanup and apply');
+            assert(read(`${path}/gtk_backup_byOpenBar.css`) === 'original', 'new enable backs up restored original');
+            await updateGtkFile(obar, dir, null);
+            assert(read(`${path}/gtk.css`) === 'original', 'new cycle restores original');
+        } else {
+            const edited = retry === 'target-edit' ? 'gtk.css' : 'gtk_backup_byOpenBar.css';
+            GLib.file_set_contents(`${path}/${edited}`, 'independent edit');
+            for (const css of [null, 'new generation']) {
+                let refused = false;
+                try { await updateGtkFile(obar, dir, css); } catch (_) { refused = true; }
+                assert(refused, 'pending cleanup must not adopt externally changed target or backup');
+                assert(read(`${path}/${edited}`) === 'independent edit', 'independent edit survives retry');
+                assert(read(`${path}/${retry === 'target-edit' ? 'gtk_backup_byOpenBar.css' : 'gtk.css'}`) === 'original', 'unmodified counterpart stays untouched after refusal');
+            }
+        }
     }
 } else if (test === 'gtk-edits') {
     const obar = fixture(test);
@@ -227,6 +314,35 @@ if (test === 'gtk-completion') {
     const key = GLib.KeyFile.new();
     key.load_from_file(path, GLib.KeyFileFlags.NONE);
     assert(key.get_string_list('Context', 'filesystems').join(';') === '!xdg-config/gtk-3.0;xdg-config/gtk-4.0:rw', 'user denial/changed access must not be resurrected or removed');
+} else if (test === 'flatpak-revoked-cycle') {
+    const obar = fixture(test);
+    obar._settings.set_boolean('apply-flatpak', true);
+    await Styles.saveFlatpakOverrides(obar, 'enable');
+    const path = `${GLib.get_user_data_dir()}/flatpak/overrides/global`;
+    // Revoke just one owned scope, leaving an addition that cleanup must remove.
+    GLib.file_set_contents(path, '# user update\n[Context]\nfilesystems=xdg-config/gtk-4.0:ro;xdg-download:ro;\n[Environment]\nUSER_EDIT=kept\n');
+    await Styles.saveFlatpakOverrides(obar, 'disable');
+    let key = GLib.KeyFile.new();
+    key.load_from_file(path, GLib.KeyFileFlags.NONE);
+    assert(key.get_string_list('Context', 'filesystems').join(';') === 'xdg-download:ro', 'disable removes only the unchanged owned grant');
+    for (let cycle = 0; cycle < 2; cycle++) {
+        await Styles.saveFlatpakOverrides(obar, 'enable');
+        key.load_from_file(path, GLib.KeyFileFlags.NONE);
+        assert(key.get_string_list('Context', 'filesystems').join(';') === 'xdg-download:ro;xdg-config/gtk-4.0:ro', 'revoked scope must stay blocked across disable/re-enable; cleaned grant may return');
+        await Styles.saveFlatpakOverrides(obar, 'disable');
+        key.load_from_file(path, GLib.KeyFileFlags.NONE);
+        assert(key.get_string_list('Context', 'filesystems').join(';') === 'xdg-download:ro', 'removed additions must not become blocked on the next cycle');
+    }
+    assert(read(path).includes('# user update'), 'independent comment must survive owner cycles');
+    // A later independent update of the blocked scope is neither adopted nor removed.
+    key.load_from_file(path, GLib.KeyFileFlags.KEEP_COMMENTS);
+    key.set_string_list('Context', 'filesystems', ['xdg-download:ro', 'xdg-config/gtk-3.0:rw']);
+    key.save_to_file(path);
+    await Styles.saveFlatpakOverrides(obar, 'enable');
+    await Styles.saveFlatpakOverrides(obar, 'disable');
+    key.load_from_file(path, GLib.KeyFileFlags.NONE);
+    assert(key.get_string_list('Context', 'filesystems').join(';') === 'xdg-download:ro;xdg-config/gtk-3.0:rw', 'independent scope update must survive');
+    assert(key.get_string('Environment', 'USER_EDIT') === 'kept' && read(path).includes('# user update'), 'independent keys/comments must survive owner cycles');
 } else if (test === 'flatpak-no-file') {
     const obar = fixture(test);
     const path = `${GLib.get_user_data_dir()}/flatpak/overrides/global`;

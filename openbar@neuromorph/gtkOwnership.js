@@ -64,14 +64,29 @@ export async function updateGtkFile(owner, directory, css) {
         // Keep the backup, but never overwrite or remove independently edited CSS.
         throw new Error(`GTK CSS changed outside Open Bar; leaving file and backup untouched: ${key}`);
     }
+    if (record?.pendingCleanup) {
+        // Restore already committed. Verify both restored target (above) and
+        // backup before completing cleanup; never infer ownership from bytes alone.
+        if (!matches(read(backup), record.backup))
+            throw new Error(`GTK backup changed outside Open Bar: ${key}`);
+        backup.delete(null);
+        ledger.delete(key);
+        record = null;
+        if (css === null) return;
+    }
     if (css === null) {
         if (record.original !== null) {
             const saved = read(backup);
             if (!matches(saved, record.backup))
                 throw new Error(`GTK backup changed outside Open Bar: ${key}`);
-            await replaceFile(file, saved.bytes, null, current.etag);
-            // Recheck backup before deleting it; do not remove independent edits.
-            if (matches(read(backup), record.backup)) backup.delete(null);
+            const etag = await replaceFile(file, saved.bytes, null, current.etag);
+            // Commit ownership metadata before the fallible unlink. A retry or
+            // new enable must recognize the restored original, not generated CSS.
+            record.last = {bytes: saved.bytes, etag};
+            record.pendingCleanup = true;
+            if (!matches(read(backup), record.backup))
+                throw new Error(`GTK backup changed outside Open Bar: ${key}`);
+            backup.delete(null);
         } else {
             file.delete(null);
         }

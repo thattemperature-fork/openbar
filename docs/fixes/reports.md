@@ -30,19 +30,21 @@ Files:
 Run from the repository worktree:
 
 ```sh
-# The locally available nixpkgs source used for Shell 50.4 / GTK 4.22.4.
-nix-shell -I nixpkgs=/nix/store/87lfqfz7mc5dm4w75qikxhd6lkr9jisr-source \
-  -p gnome-shell glib.dev mesa gjs gtk4 gobject-introspection --run '
-  export TMPDIR=/var/lib/hermes/.hermes/cache/scratch
-  export __EGL_VENDOR_LIBRARY_FILENAMES=/nix/store/457mqa9dsvw9cnmi6pr06zjy1ib0iic4-mesa-26.2.5/share/glvnd/egl_vendor.d/50_mesa.json
-  bash tests/reports-run.sh'
-
-# A single coherent older dependency set: Shell 49.4 / GTK 4.20.3.
-nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/b6018f87da91d19d0ab4cf979885689b469cdd41.tar.gz \
-  -p gnome-shell glib.dev mesa gjs gtk4 gobject-introspection --run '
-  export TMPDIR=/var/lib/hermes/.hermes/cache/scratch
-  export __EGL_VENDOR_LIBRARY_FILENAMES=/nix/store/x2mh4drhlh7wk3plcjj0b8ynsy3lphnj-mesa-25.2.6/share/glvnd/egl_vendor.d/50_mesa.json
-  bash tests/reports-run.sh'
+# Use one coherent Shell/GTK/GJS/Mesa dependency set per run.
+ref=nixpkgs # Shell 50.4 / GTK 4.22.4 for the recorded run
+# Shell 49.4 / GTK 4.20.3 alternative:
+# ref=github:NixOS/nixpkgs/b6018f87da91d19d0ab4cf979885689b469cdd41
+mesa=$(nix eval --raw "$ref#mesa.outPath")
+types=''
+for pkg in gtk4 pango gdk-pixbuf graphene harfbuzz gobject-introspection; do
+    path=$(nix eval --raw "$ref#$pkg.out.outPath")
+    types="$types:$path/lib/girepository-1.0"
+done
+GI_TYPELIB_PATH="$types" \
+__EGL_VENDOR_LIBRARY_FILENAMES="$mesa/share/glvnd/egl_vendor.d/50_mesa.json" \
+  nix shell "$ref#gnome-shell" "$ref#glib.dev" "$ref#glib.bin" "$ref#dbus" \
+    "$ref#mesa" "$ref#gjs" "$ref#gtk4" "$ref#gobject-introspection" \
+    -c bash tests/reports-run.sh
 ```
 
 Do not simply prepend an old Shell binary to the newer GTK/GJS environment: that failed in a GTK subprocess with duplicate `GDesktopAppInfoLookup` type registration and a GJS native assertion. That was a mixed-dependency harness failure, not an Open Bar shadow crash. The coherent nixpkgs commands above passed.

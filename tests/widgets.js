@@ -333,6 +333,34 @@ async function tests() {
                     }
                 }
             }
+            // Native switches embedded in real popup rows must use the same
+            // checked-contrast palette as standalone switches, in every scope.
+            // autofg and contrasting accents prevent mfg == amfg hiding bugs.
+            obar._hcSettings.set_boolean('high-contrast', false);
+            settings.set_boolean('autofg-menu', true);
+            for (const mode of ['scoped', 'menu-global', 'accent-global']) {
+                settings.set_boolean('menustyle', mode !== 'accent-global');
+                settings.set_boolean('apply-menu-shell', mode === 'menu-global');
+                settings.set_boolean('apply-accent-shell', mode === 'accent-global');
+                root.set_style_class_name(mode === 'scoped' ? 'openmenu popup-menu-content' : '');
+                for (const accent of [['0.95', '0.9', '0.85'], ['0.05', '0.1', '0.15']]) {
+                    settings.set_strv('mscolor', accent);
+                    reload();
+                    const standalone = new PopupMenu.Switch(true);
+                    const row = new PopupMenu.PopupSwitchMenuItem('Native popup switch', true);
+                    if (mode === 'scoped') row.add_style_class_name('openmenu');
+                    root.add_child(standalone); root.add_child(row);
+                    for (const state of ['checked', 'checked hover', 'checked active', 'checked focus']) {
+                        standalone.set_style_pseudo_class(state);
+                        row._switch.set_style_pseudo_class(state);
+                        equal(fg(row._switch), fg(standalone), `popup switch contrast ${mode} ${accent[0]} ${state}`);
+                        equal(bg(row._switch), bg(standalone), `popup switch background ${mode} ${state}`);
+                    }
+                    standalone.destroy(); row.destroy();
+                }
+            }
+            settings.set_boolean('autofg-menu', false);
+            settings.set_strv('mscolor', ['0.9', '0.1', '0.2']);
             // Exercise legacy CSS in the real St parser using native legacy-shaped actors.
             // Does not claim a GNOME 45/46 compositor test.
             obar.gnomeVersion = 45;

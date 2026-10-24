@@ -1,0 +1,206 @@
+[
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.A5c4ce",
+    "result": "PASS Shell 49.4: integration: 56 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.UICH9R",
+    "result": "PASS Shell 49.4: runtime: 26 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.0ZQfdQ",
+    "result": "{\n  \"shell\": \"49.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 235.579,\n      \"maxFrameGapMs\": 251.854,\n      \"maxEventLoopGapMs\": 236.6,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 146.71,\n      \"maxFrameGapMs\": 35.401,\n      \"maxEventLoopGapMs\": 28.613,\n      \"frameCount\": 20,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 140.653,\n      \"maxFrameGapMs\": 41.225,\n      \"maxEventLoopGapMs\": 31.17,\n      \"frameCount\": 19,\n      \"samples\": 9216\n    }\n  ]\n}",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-import.F4OWbt",
+    "result": "PASS Shell 49.4: palette-import: 18 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-fitts-review.HRljge",
+    "result": "PASS: GNOME 49.4 Fitts review all: 75 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.lehZsr",
+    "result": "PASS: 1319 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.Ahm828",
+    "result": "PASS Shell 49.4: menu-modern: 46 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.1PkTzL",
+    "result": "PASS Shell 49.4: menu-modern-root: 60 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.67xycA",
+    "result": "PASS Shell 49.4: date-menu: 9 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.F9KNT8",
+    "result": "PASS Shell 49.4: lifecycle: 24 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.KttlPm",
+    "result": "PASS: GNOME 49.4 quick: 768 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.6gGLFW",
+    "result": "PASS: GNOME 49.4 switches: 708 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.RtQz5E",
+    "result": "PASS: GNOME 49.4 gradient: 128 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.9p5TF3",
+    "result": "PASS: GNOME 49.4 fitts: 32 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.mp1Ffw",
+    "result": "PASS: GNOME 49.4 fitts-lifecycle: 12 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.n2qIR1",
+    "result": "PASS: GNOME 49.4 fitts-session: 12 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "49.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.2rT0Rz",
+    "result": "PASS integration assets: 8 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.a71hop",
+    "result": "PASS Shell 50.4: integration: 56 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.3CVA8L",
+    "result": "PASS Shell 50.4: runtime: 26 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.JHky9Z",
+    "result": "{\n  \"shell\": \"50.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 203.923,\n      \"maxFrameGapMs\": 223.57,\n      \"maxEventLoopGapMs\": 204.8,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 150.581,\n      \"maxFrameGapMs\": 45.097,\n      \"maxEventLoopGapMs\": 25.895,\n      \"frameCount\": 19,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 125.259,\n      \"maxFrameGapMs\": 34.121,\n      \"maxEventLoopGapMs\": 29.297,\n      \"frameCount\": 18,\n      \"samples\": 9216\n    }\n  ]\n}",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-import.ii30PX",
+    "result": "PASS Shell 50.4: palette-import: 18 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-fitts-review.trAsDq",
+    "result": "PASS: GNOME 50.4 Fitts review all: 61 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.0uyqDI",
+    "result": "PASS: 1319 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.DAYdiA",
+    "result": "PASS Shell 50.4: menu-modern: 46 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.XZ5fyO",
+    "result": "PASS Shell 50.4: menu-modern-root: 60 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.DCndS0",
+    "result": "PASS Shell 50.4: date-menu: 9 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.T41VCV",
+    "result": "PASS Shell 50.4: lifecycle: 24 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.G8Casj",
+    "result": "PASS: GNOME 50.4 quick: 768 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.UzXqmk",
+    "result": "PASS: GNOME 50.4 switches: 708 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.XbuPXi",
+    "result": "PASS: GNOME 50.4 gradient: 128 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.VVRGpQ",
+    "result": "PASS: GNOME 50.4 fitts: 32 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.fCNO3E",
+    "result": "PASS: GNOME 50.4 fitts-lifecycle: 8 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.mHFIab",
+    "result": "PASS: GNOME 50.4 fitts-session: 12 assertions",
+    "extension_errors": []
+  },
+  {
+    "shell": "50.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.btxnMk",
+    "result": "PASS integration assets: 8 assertions",
+    "extension_errors": []
+  }
+]

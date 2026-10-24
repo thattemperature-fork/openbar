@@ -143,6 +143,19 @@ export default class Openbar extends Extension {
         this._timeouts?.clear();
     }
 
+    // Shell callbacks are synchronous; own every detached completion/rejection.
+    _runStyleTask(label, task) {
+        try {
+            return Promise.resolve(task()).catch(error => {
+                console.error(`Open Bar: ${label} failed: ${error.message}`);
+                return false;
+            });
+        } catch(error) {
+            console.error(`Open Bar: ${label} failed: ${error.message}`);
+            return Promise.resolve(false);
+        }
+    }
+
     _writeAppearance(key, value) {
         const settings = this._intSettings;
         const current = settings.get_string(key);
@@ -256,14 +269,15 @@ export default class Openbar extends Extension {
     }
 
     async backgroundPalette() {
-        if(!this._settings || !this._intSettings)
+        if(!this._settings || !this._intSettings || this._settings.get_boolean('import-export'))
             return;
         this._paletteCancellable?.cancel();
         const cancellable = new Gio.Cancellable();
         this._paletteCancellable = cancellable;
         const settings = this._settings;
         const isCurrent = () => this._paletteCancellable === cancellable &&
-            !cancellable.is_cancelled() && this._settings === settings;
+            !cancellable.is_cancelled() && this._settings === settings &&
+            !settings.get_boolean('import-export');
         const uris = [settings.get_string('dark-bguri'), settings.get_string('light-bguri')];
         // Deliberately scoped to this refresh: same URI may contain new image data.
         const results = new Map();
@@ -297,19 +311,33 @@ export default class Openbar extends Extension {
                 // Fill all slots so a short palette cannot retain older colors/counts.
                 const colors = Array.from({length: 12}, (_, i) => palette[i] ?? palette[0]);
                 const populations = Array.from({length: 12}, (_, i) => counts[i] ?? 0);
-                this._paletteCounts ??= {};
-                this._paletteCounts[mode] = populations;
+                // Until the whole mode is published, old counts no longer
+                // describe its (possibly partially replaced) palette.
+                if(this._paletteCounts)
+                    delete this._paletteCounts[mode];
                 const currentMode = this._intSettings.get_string('color-scheme') === 'prefer-dark' ? 'dark' : 'light';
                 for(let i = 0; i < 12; i++) {
                     const color = colors[i].map(String);
-                    settings.set_strv(`${mode}-palette${i + 1}`, color);
+                    if(!isCurrent())
+                        return;
+                    this._setPaletteSetting(settings, `${mode}-palette${i + 1}`, color, 'strv');
                     if(mode === currentMode) {
-                        settings.set_strv(`palette${i + 1}`, color);
-                        settings.set_int(`count${i + 1}`, populations[i]);
+                        if(!isCurrent())
+                            return;
+                        this._setPaletteSetting(settings, `palette${i + 1}`, color, 'strv');
+                        if(!isCurrent())
+                            return;
+                        this._setPaletteSetting(settings, `count${i + 1}`, populations[i], 'int');
                     }
                 }
+                if(!isCurrent())
+                    return;
+                this._paletteCounts ??= {};
+                this._paletteCounts[mode] = populations;
                 if(mode === currentMode)
                     settings.set_boolean('bg-change', !settings.get_boolean('bg-change'));
+                if(!isCurrent())
+                    return;
                 if(settings.get_boolean('autotheme-refresh') && settings.get_string(`autotheme-${mode}`) !== 'Select Theme')
                     AutoThemes.autoApplyBGPalette(this, mode);
             }
@@ -325,10 +353,50 @@ export default class Openbar extends Extension {
     }
 
     // Lifecycle owner calls this before clearing settings (and before re-enable).
-    cancelBackgroundPalette() {
+    cancelBackgroundPalette(clearCounts = true) {
         this._paletteCancellable?.cancel();
         this._paletteCancellable = null;
-        this._paletteCounts = null;
+        if(clearCounts)
+            this._paletteCounts = null;
+    }
+
+    // A single expected notification, not a broad publication guard: a settings
+    // observer may synchronously import/reset another key during our setter.
+    _setPaletteSetting(settings, key, value, kind) {
+        const previous = this._paletteWrite;
+        this._paletteWrite = {settings, key, value};
+        try {
+            settings[`set_${kind}`](key, value);
+        } finally {
+            this._paletteWrite = previous;
+        }
+    }
+
+    _onPaletteSettingChanged(settings, key) {
+        if(key === 'import-export') {
+            if(settings.get_boolean(key))
+                this.cancelBackgroundPalette(false);
+            return;
+        }
+        const match = /^(?:(dark|light)-)?(palette|count)([1-9]|1[0-2])$/.exec(key);
+        if(!match)
+            return;
+        const expected = this._paletteWrite;
+        const value = match[2] === 'count' ? settings.get_int(key) : settings.get_strv(key);
+        if(expected?.settings === settings && expected.key === key &&
+            JSON.stringify(expected.value) === JSON.stringify(value)) {
+            this._paletteWrite = null;
+            return;
+        }
+        this.cancelBackgroundPalette(false);
+        if(match[1] && !settings.get_boolean('import-export')) {
+            if(this._paletteCounts)
+                delete this._paletteCounts[match[1]];
+        } else {
+            // Imports/resets replace a settings bundle; even unchanged shared
+            // counts may be imported, with no notification for those values.
+            this._paletteCounts = null;
+        }
     }
 
     _injectToFunction(parent, name, func) {
@@ -675,9 +743,14 @@ export default class Openbar extends Extension {
         if(!this._settings || this.disabling)
             return;
 
+        // Observe imports and external palette/count replacement before the
+        // palette early return. Our own exact writes retain paired populations.
+        if(obj === this._settings)
+            this._onPaletteSettingChanged(obj, key);
+
         // Nothing to update if it's a color palette setting
         if(key.startsWith('palette') || key.startsWith('prominent') ||
-            key.startsWith('dark-') || key.startsWith('light-'))
+            key.startsWith('dark-') || key.startsWith('light-') || /^count\d+$/.test(key))
             return;
 
         // Generate background color palette
@@ -731,11 +804,11 @@ export default class Openbar extends Extension {
 
         // Generate/Reload stylesheet
         if(key == 'trigger-reload') { // A toggle key to trigger generation and reload of stylesheet
-            StyleSheets.reloadStyle(this, this);
+            this._runStyleTask('stylesheet generation', () => StyleSheets.reloadStyle(this, this));
             return;
         }
         if(callbk_param == 'high-contrast') { // Reload stylesheet to pick up high contrast icons
-            StyleSheets.reloadStyle(this, this);
+            this._runStyleTask('stylesheet generation', () => StyleSheets.reloadStyle(this, this));
             return;
         }
         if(key == 'reloadstyle') { // A toggle key to trigger reload of existing stylesheet
@@ -790,17 +863,17 @@ export default class Openbar extends Extension {
             // For mscolor/msalpha, stylesheet will be generated/reloaded and also saveGtkCss will be called (in styleSheets.js)
             // For other keys, call saveGtkCss from here
             if(key != 'mscolor' && key != 'msalpha') {
-                StyleSheets.saveGtkCss(this, 'enable');
+                this._runStyleTask('GTK styling', () => StyleSheets.saveGtkCss(this, 'enable'));
                 const wmaxHbar = this._settings.get_boolean('wmax-hbarhint');
                 // Reload styelsheet to match WMax bar with Gtk headerbar
                 if((key == 'headerbar-hint' || key == 'hscd-color') && wmaxHbar)
-                    StyleSheets.reloadStyle(this, this);
+                    this._runStyleTask('stylesheet generation', () => StyleSheets.reloadStyle(this, this));
                 return;
             }
         }
         // Flatpak overrides
         if(key == 'apply-flatpak') {
-            StyleSheets.saveFlatpakOverrides(this, 'enable');
+            this._runStyleTask('Flatpak permissions', () => StyleSheets.saveFlatpakOverrides(this, 'enable'));
             return;
         }
 
@@ -811,7 +884,7 @@ export default class Openbar extends Extension {
             this.applyMenuStyles(panel, menustyle);
         }
         if(key == 'menustyle') {
-            StyleSheets.reloadStyle(this, this);
+            this._runStyleTask('stylesheet generation', () => StyleSheets.reloadStyle(this, this));
         }
 
         this._updateAppearance(key);
@@ -1116,7 +1189,7 @@ export default class Openbar extends Extension {
 
     onModeChange() {
         this.gtkCSS = true;
-        StyleSheets.saveGtkCss(this, 'enable');
+        this._runStyleTask('GTK styling', () => StyleSheets.saveGtkCss(this, 'enable'));
         AutoThemes.onModeChange(this);
         this._updateAppearance('enabled');
     }
@@ -1128,7 +1201,8 @@ export default class Openbar extends Extension {
         // A newer request supersedes decoding now, not only after debounce.
         this._paletteCancellable?.cancel();
         this._queueTimeout('updateBguriId', () => {
-            if(!this._settings || !this._bgSettings || !this._intSettings)
+            if(!this._settings || !this._bgSettings || !this._intSettings ||
+                this._settings.get_boolean('import-export'))
                 return;
             const colorScheme = this._intSettings.get_string('color-scheme');
             this.colorScheme = colorScheme;
@@ -1180,7 +1254,8 @@ export default class Openbar extends Extension {
     }
 
     createFittsWidget(box, btn) {
-        if (!this._fittsActive || !this.supportsFittsWidgets())
+        if (!this._fittsActive || !this.supportsFittsWidgets() ||
+            !this.panelBoxes?.includes(box) || btn.get_parent() !== box)
             return;
         let panel = Main.panel;
         let panelBox = Main.layoutManager.panelBox;
@@ -1400,10 +1475,8 @@ export default class Openbar extends Extension {
     }
 
     updateFittsWidgetAddRemove(box, key, btn) {
-        if(this.fittsCornerTimeoutId) {
-            clearTimeout(this.fittsCornerTimeoutId);
-            this.fittsCornerTimeoutId = null;
-        }
+        // Only relevant corner changes replace the named timer below; unrelated
+        // button events must not cancel recreation already in flight.
         if(this.disabling) {
             return;
         }
@@ -1487,6 +1560,8 @@ export default class Openbar extends Extension {
     }
 
     enable() {
+        StyleSheets.beginStyleWrites(this);
+        this.cancelBackgroundPalette();
         // Get Gnome version
         const [major, minor] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
         this.gnomeVersion = major;
@@ -1511,8 +1586,6 @@ export default class Openbar extends Extension {
         this.msgLists = [];
         this.msgListIds = [];
         this.styleUnloaded = false;
-        this.updatingBguri = false;
-        this.updatingBguriId = null;
         this.updateBguriId = null;
         this.postStartupId = null;
         this.disabling = false;
@@ -1538,6 +1611,15 @@ export default class Openbar extends Extension {
             this._settings.set_int('monitor-height', panelMonitor.height);
             this._settings.set_int('monitor-width', panelMonitor.width);
         }
+
+        // Initialize paths before any settings callback or saved-mode catch-up.
+        const userRunDir = GLib.get_user_runtime_dir();
+        this.obarRunDir = Gio.File.new_for_path(`${userRunDir}/io.github.neuromorph.openbar`);
+        this.obarAssetsDir = this.obarRunDir.get_child('assets');
+        if(!this.obarAssetsDir.query_exists(null))
+            this.obarAssetsDir.make_directory_with_parents(null);
+        this._runtimeAssetsReady = StyleSheets.prepareRuntimeAssets(this);
+        this._runStyleTask('runtime assets', () => this._runtimeAssetsReady);
 
         // Connect to the settings changes
         this._connections = new ConnectManager();
@@ -1600,9 +1682,8 @@ export default class Openbar extends Extension {
         }, 2000);
         // Set initial bguri as per color-scheme
         const bguri = this._settings.get_string('bguri');
-        if(bguri == '')
-            this.updateBguri();
-        else {
+        this.updateBguri(); // Session-only per-mode populations must be regenerated.
+        if(bguri != '') {
             // If mode was changed (by script/extension) while OpenBar was disabled (screen-lock),
             // detect mode-change and update styles
             let obarScheme = this._settings.get_string('color-scheme');
@@ -1627,35 +1708,13 @@ export default class Openbar extends Extension {
             }
         );
 
-        // OpenBar runtime directory
-        const userRunDir = GLib.get_user_runtime_dir();
-        this.obarRunDir = Gio.File.new_for_path(`${userRunDir}/io.github.neuromorph.openbar`);
-        this.obarAssetsDir = Gio.File.new_for_path(`${this.obarRunDir.get_path()}/assets`);
-        // Create dirs if missing
-        if(!this.obarAssetsDir.query_exists(null)) {
-            try {
-                this.obarAssetsDir.make_directory_with_parents(null);
-            }
-            catch(e) {
-                console.error('Error creating OpenBar runtime/assets directory: ' + e);
-            }
-        }
-        // Copy static assets (SVGs) to runtime dir
-        const assetsSrcDir = Gio.File.new_for_path(`${this.path}/media/assets`);
-        const iter = assetsSrcDir.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
-        for(const fileInfo of iter) {
-            let srcFile = Gio.File.new_for_path(`${assetsSrcDir.get_path()}/${fileInfo.get_name()}`);
-            let dstFile = Gio.File.new_for_path(`${this.obarAssetsDir.get_path()}/${fileInfo.get_name()}`);
-            srcFile.copy_async(dstFile, Gio.FileCopyFlags.OVERWRITE | Gio.FileCopyFlags.TARGET_DEFAULT_PERMS, GLib.PRIORITY_DEFAULT, null, null);
-        }
-
         // Add 'openbar' class to top panel and panelBox
         panel.add_style_class_name('openbar');
         Main.layoutManager.panelBox.add_style_class_name('openbar');
         // Cause stylesheet to save and reload on Enable (also creates gtk css)
-        StyleSheets.reloadStyle(this, this);
+        this._runStyleTask('stylesheet generation', () => StyleSheets.reloadStyle(this, this));
         // Add Open Bar Flatpak Overrides
-        StyleSheets.saveFlatpakOverrides(this, 'enable');
+        this._runStyleTask('Flatpak permissions', () => StyleSheets.saveFlatpakOverrides(this, 'enable'));
 
         // Apply the initial style
         this.updatePanelStyle(null, 'enabled');
@@ -1692,6 +1751,8 @@ export default class Openbar extends Extension {
 
     disable() {
         this.disabling = true;
+        const writers = StyleSheets.invalidateStyleWrites(this);
+        this.cancelBackgroundPalette();
         this._cancelTimeouts();
 
         // Get the top panel
@@ -1747,10 +1808,11 @@ export default class Openbar extends Extension {
         Main.messageTray._bannerBin.y_align = Clutter.ActorAlign.START;
 
         // Clear/Restore Gtk css and Flatpak override
-        if(this._settings) {
-            StyleSheets.saveGtkCss(this, 'disable');
-            StyleSheets.saveFlatpakOverrides(this, 'disable');
-        }
+        this._styleCleanup = Promise.all([
+            writers,
+            this._runStyleTask('GTK restoration', () => StyleSheets.saveGtkCss(this, 'disable')),
+            this._runStyleTask('Flatpak restoration', () => StyleSheets.saveFlatpakOverrides(this, 'disable')),
+        ]);
 
         this.main = null;
         this._settings = null;

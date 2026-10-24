@@ -1076,12 +1076,25 @@ export function onModeChange(obar) {
     }
 
     // Copy palette to main and Toggle 'bg-change' to update the current mode palette in preferences window
+    // Mode copies are controlled publication too, not external imports.
+    const setPalette = (key, value, kind) => {
+        if(obar._setPaletteSetting)
+            obar._setPaletteSetting(obar._settings, key, value, kind);
+        else
+            obar._settings[`set_${kind}`](key, value);
+    };
     for(let i = 1; i <= 12; i++) {
-        obar._settings.set_strv('palette'+i, obar._settings.get_strv(prefix+'palette'+i));
+        if(obar._settings.get_boolean('import-export'))
+            return;
+        setPalette('palette'+i, obar._settings.get_strv(prefix+'palette'+i), 'strv');
+        if(obar._settings.get_boolean('import-export'))
+            return;
         const count = obar._paletteCounts?.[prefix.slice(0, -1)]?.[i-1];
         if(count !== undefined)
-            obar._settings.set_int('count'+i, count);
+            setPalette('count'+i, count, 'int');
     }
+    if(obar._settings.get_boolean('import-export'))
+        return;
     let bgchange = obar._settings.get_boolean('bg-change');
     if(bgchange)
         obar._settings.set_boolean('bg-change', false);

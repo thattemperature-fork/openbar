@@ -22,9 +22,9 @@ function colors(actor) {
     return [node.get_foreground_color().to_string(), node.get_background_color().to_string(),
         node.get_background_image()?.get_basename() ?? null];
 }
-const states = ['', 'hover', 'focus', 'selected', 'active', 'active:hover',
-    'active:focus', 'checked', 'checked:active', 'checked:hover', 'checked:focus',
-    'checked:selected', 'checked:active:hover', 'selected:active:hover'];
+const states = ['', 'hover', 'focus', 'selected', 'active', 'active hover',
+    'active focus', 'checked', 'checked active', 'checked hover', 'checked focus',
+    'checked selected', 'checked active hover', 'selected active hover'];
 function snapshot(actors) {
     const result = {};
     for (const [name, actor] of Object.entries(actors)) {
