@@ -662,6 +662,12 @@ export default class Openbar extends Extension {
             for(const btn of box) {
                 // Screen recording/share indicators use ButtonBox instead of Button
                 if(btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) {
+                    // Hidden native recording/sharing actors must be ready on their
+                    // first show, independently of the optional Fitts observers.
+                    btn.add_style_class_name('button-container');
+                    if(this._connections && !this._connections.connections.some(c =>
+                        c.obj === btn.child && c.sig === 'notify::visible'))
+                        this._connections.connect(btn.child, 'notify::visible', this.setPanelStyle.bind(this));
                     if(btn.child.visible) {
                         if(isFirst) {
                             firstIdx = idx;
@@ -1642,17 +1648,6 @@ export default class Openbar extends Extension {
         for(const panelBox of this.panelBoxes) {
             connections.push([panelBox, this.addedSignal, this.updatePanelStyle.bind(this)]);
             connections.push([panelBox, this.removedSignal, this.updatePanelStyle.bind(this)]);
-        }
-        // Connections for panel buttons notify::visible
-        for(const box of this.panelBoxes) {
-            for(const btn of box) {
-                if(btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) {
-                    if(btn.child.constructor.name === 'ATIndicator' || btn.child.constructor.name === 'InputSourceIndicator'
-                        || btn.child.constructor.name === 'DwellClickIndicator') {
-                        connections.push([btn.child, 'notify::visible', this.setPanelStyle.bind(this)]);
-                    }
-                }
-            }
         }
         // Connection for Toggle Switch status shapes in High Contrast
         if(this.gnomeVersion <= 45) {
