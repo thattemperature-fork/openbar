@@ -23,6 +23,8 @@ import Gio from 'gi://Gio';
 import Pango from 'gi://Pango';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
+import {replaceFile, queueStyleWrite} from './styleWrites.js';
+export {beginStyleWrites, invalidateStyleWrites} from './styleWrites.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async', 'load_contents_finish');
 Gio._promisify(Gio.File.prototype, 'move_async', 'move_finish');
@@ -38,7 +40,7 @@ const getBgDark = Utils.getBgDark;
 const rgbToHex = Utils.rgbToHex;
 
 // SVG for calendar event dot icon (use fg color)
-function saveCalEventSVG(obar, Me) {
+function saveCalEventSVG(obar, Me, cancellable) {
     let svg, svgpath, svgcolor;
     svg = `
     <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
@@ -54,26 +56,12 @@ function saveCalEventSVG(obar, Me) {
 
     svg = svg.replace(`#REPLACE`, svgcolor);
 
-    let file = Gio.File.new_for_path(svgpath);
-    let bytearray = new TextEncoder().encode(svg);
-
-    try {
-        file.replace_async(null, false, Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, (obj, res) => {
-            let stream = obj.replace_finish(res);
-            stream.write_bytes_async(bytearray, GLib.PRIORITY_DEFAULT, null, (w_obj, w_res) => {
-                w_obj.write_bytes_finish(w_res);
-                stream.close(null);
-            });
-        });
-    }
-    catch(e) {
-      console.log("Failed to write calendar-today.svg file: " + svgpath, e);
-    }
+    return replaceFile(Gio.File.new_for_path(svgpath), svg, cancellable);
 
 }
 
 // SVG for toggle switch (toggle On)
-function saveToggleSVG(type, obar, Me) {
+function saveToggleSVG(type, obar, Me, cancellable) {
     let svg, svgpath, svgFill = '', svgStroke = '', hc = '';
     svg =
     `<svg viewBox="0 0 44 26" xmlns="http://www.w3.org/2000/svg">
@@ -93,26 +81,12 @@ function saveToggleSVG(type, obar, Me) {
     }
     svg = svg.replace(`#HIGHCONTRAST`, hc);
 
-    let file = Gio.File.new_for_path(svgpath);
-    let bytearray = new TextEncoder().encode(svg);
-
-    try {
-        file.replace_async(null, false, Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, (obj, res) => {
-            let stream = obj.replace_finish(res);
-            stream.write_bytes_async(bytearray, GLib.PRIORITY_DEFAULT, null, (w_obj, w_res) => {
-                w_obj.write_bytes_finish(w_res);
-                stream.close(null);
-            });
-        });
-    }
-    catch(e) {
-      console.log("Failed to write toggle-on.svg file: " + svgpath, e);
-    }
+    return replaceFile(Gio.File.new_for_path(svgpath), svg, cancellable);
 
 }
 
 // SVG for checkbox buttons (On, On-focused, Off-focused)
-function saveCheckboxSVG(type, obar, Me) {
+function saveCheckboxSVG(type, obar, Me, cancellable) {
     let svg, svgpath, svgFill = 'none', svgStroke = 'none';
     if(type == 'on') {
         svg = `
@@ -153,21 +127,7 @@ function saveCheckboxSVG(type, obar, Me) {
     svg = svg.replace(`#SVGFILL`, svgFill);
     svg = svg.replace(`#SVGSTROKE`, svgStroke);
 
-    let file = Gio.File.new_for_path(svgpath);
-    let bytearray = new TextEncoder().encode(svg);
-
-    try {
-        file.replace_async(null, false, Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, (obj, res) => {
-            let stream = obj.replace_finish(res);
-            stream.write_bytes_async(bytearray, GLib.PRIORITY_DEFAULT, null, (w_obj, w_res) => {
-                w_obj.write_bytes_finish(w_res);
-                stream.close(null);
-            });
-        });
-    }
-    catch(e) {
-      console.log("Failed to write checkbox-on/off.svg file: " + svgpath, e);
-    }
+    return replaceFile(Gio.File.new_for_path(svgpath), svg, cancellable);
 
 }
 
@@ -930,18 +890,26 @@ function createGtkCss(obar, gtk4) {
 }
 
 // Save Gtk stylesheet to user config dir
-export function saveGtkCss(obar, caller) {
-    const importExport = obar._settings.get_boolean('import-export');
-    const pauseStyleReload = obar._settings.get_boolean('pause-reload');
-    if(importExport || pauseStyleReload)
-        return;
-    // console.log('saveGtkCss called with ImportExport false, Pause false');
-
+function gtkSnapshot(obar, caller) {
+    if (caller === 'disable') return {applyGtk: false, gtkStrings: []};
+    if (!obar._settings || obar._settings.get_boolean('import-export') || obar._settings.get_boolean('pause-reload'))
+        return null;
     const applyGtk = obar._settings.get_boolean('apply-gtk');
+    return {applyGtk, gtkStrings: applyGtk ? [createGtkCss(obar, 0), createGtkCss(obar, 1)] : []};
+}
+
+export function saveGtkCss(obar, caller) {
+    const snapshot = gtkSnapshot(obar, caller);
+    if (!snapshot) return Promise.resolve(false);
+    return queueStyleWrite(obar, cancellable => applyGtkCss(snapshot, cancellable), {cleanup: caller === 'disable'});
+}
+
+async function applyGtkCss({applyGtk, gtkStrings}, cancellable) {
     const configDir = GLib.get_user_config_dir();
     const gtk3Dir = Gio.File.new_for_path(`${configDir}/gtk-3.0`);
     const gtk4Dir = Gio.File.new_for_path(`${configDir}/gtk-4.0`);
-    [gtk3Dir, gtk4Dir].forEach(async (dir, idx) => {
+    // Sequential operations also keep error completion inside this queue entry.
+    for (const [idx, dir] of [gtk3Dir, gtk4Dir].entries()) {
         // console.log(dir.get_path() +'\n' + gtkstring);
 
         // Create dir if missing
@@ -976,10 +944,10 @@ export function saveGtkCss(obar, caller) {
         }
 
         // Disable extension or turn off Gtk app style
-        if(caller == 'disable' || !applyGtk) {
+        if(!applyGtk) {
             if(isGtkOpenBar && isBackupOpenBar) {
                 try { // Restore backup
-                    backup.move_async(file, Gio.FileCopyFlags.OVERWRITE, null, null, null, null);
+                    await backup.move_async(file, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_DEFAULT, cancellable, null);
                 }
                 catch (e) {
                     console.error('Error restoring gtk.css from backup: ' + e);
@@ -987,7 +955,7 @@ export function saveGtkCss(obar, caller) {
             }
             else if(isGtkOpenBar) {
                 try {
-                    file.delete_async(null, null, null);
+                    await file.delete_async(GLib.PRIORITY_DEFAULT, cancellable);
                 }
                 catch (e) {
                     console.error('Error deleting OpenBar gtk.css: ' + e);
@@ -998,7 +966,7 @@ export function saveGtkCss(obar, caller) {
         else if(applyGtk) {
             if(isGtk && !isGtkOpenBar) {
                 try {
-                    await file.move_async(backup, Gio.FileCopyFlags.OVERWRITE, null, null, null, null);
+                    await file.move_async(backup, Gio.FileCopyFlags.OVERWRITE, GLib.PRIORITY_DEFAULT, cancellable, null);
                 }
                 catch (e) {
                     console.error('Error backing up gtk.css: ' + e);
@@ -1006,22 +974,9 @@ export function saveGtkCss(obar, caller) {
             }
 
             // Create stylesheet string and save to css file
-            let gtkstring = createGtkCss(obar, idx);
-            let bytearray = new TextEncoder().encode(gtkstring);
-            try {
-                file.replace_async(null, false, Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null, (obj, res) => {
-                    let stream = obj.replace_finish(res);
-                    stream.write_bytes_async(bytearray, GLib.PRIORITY_DEFAULT, null, (w_obj, w_res) => {
-                        w_obj.write_bytes_finish(w_res);
-                        stream.close(null);
-                    });
-                });
-            }
-            catch (e) {
-                console.log("Failed to write gtk.css file: " + dir.get_path() + e);
-            }
+            await replaceFile(file, gtkStrings[idx], cancellable);
         }
-    });
+    }
 }
 
 // Apply override to provide flatpak apps access to Gtk config css files
@@ -3826,68 +3781,39 @@ function getStylesheet(obar, Me) {
     return stylesheet;
 }
 
-async function writeStylesheet(obar, stylesheet) {
-    let stylepath = obar.obarRunDir.get_path() + '/stylesheet.css';
-    let file = Gio.File.new_for_path(stylepath);
-    let bytearray = new TextEncoder().encode(stylesheet);
-
-    try {
-        let stream = await file.replace_async(null, false, Gio.FileCreateFlags.NONE, GLib.PRIORITY_DEFAULT, null);
-        await stream.write_bytes_async(bytearray, GLib.PRIORITY_DEFAULT, null);
-        stream.close(null);
+async function writeSVGs(snapshot, Me, cancellable, current) {
+    // Emit a coherent asset set for each generation. Flags are not cleared by
+    // obsolete/failed generations, so later requests cannot lose dirty assets.
+    for (const type of ['on', 'on-hc']) {
+        if (!current()) return;
+        await saveToggleSVG(type, snapshot, Me, cancellable);
     }
-    catch(e) {
-      console.log("Failed to write stylsheet file: " + stylepath, e);
+    for (const type of ['on', 'on-focused', 'off-focused']) {
+        if (!current()) return;
+        await saveCheckboxSVG(type, snapshot, Me, cancellable);
     }
+    if (current()) await saveCalEventSVG(snapshot, Me, cancellable);
 }
 
-async function writeSVGs(obar, Me) {
-    if(obar.msSVG) { // Accent color is changed
-        saveToggleSVG('on', obar, Me);
-        saveToggleSVG('on-hc', obar, Me);
-        saveCheckboxSVG('on', obar, Me);
-        saveCheckboxSVG('on-focused', obar, Me);
-        obar.msSVG = false;
-    }
-
-    if(obar.mhSVG) { // Highlight color is changed
-        saveCheckboxSVG('on-focused', obar, Me);
-        saveCheckboxSVG('off-focused', obar, Me);
-        obar.mhSVG = false;
-    }
-
-    if(obar.smfgSVG) { // Foreground color is changed
-        saveCalEventSVG(obar, Me);
-        obar.smfgSVG = false;
-    }
-}
-
-async function writeGtkCss(obar) {
-    if(obar.gtkCSS) { // accent or Gtk/Flatpak settings changed
-        saveGtkCss(obar, 'enable');
-        obar.gtkCSS = false;
-    }
-}
-
-export async function reloadStyle(obar, Me) {
-    const importExport = obar._settings.get_boolean('import-export');
-    const pauseStyleReload = obar._settings.get_boolean('pause-reload');
-    if(importExport || pauseStyleReload)
-        return;
-    // console.log('reloadStyle called with ImportExport false, Pause false');
-    // Get stylesheet string
-    let stylesheet = getStylesheet(obar, Me);
-    try {
-        await Promise.all([writeStylesheet(obar, stylesheet), writeSVGs(obar, Me), writeGtkCss(obar)]);
-    }
-    catch(e) {
-        console.log("Failed to reload stylesheet: ", e);
-    }
-
-    // Cause stylesheet to reload by toggling 'reloadstyle'
-    let reloadstyle = obar._settings.get_boolean('reloadstyle');
-    if(reloadstyle)
-        obar._settings.set_boolean('reloadstyle', false);
-    else
-        obar._settings.set_boolean('reloadstyle', true);
+export function reloadStyle(obar, Me) {
+    const settings = obar._settings;
+    if (!settings || settings.get_boolean('import-export') || settings.get_boolean('pause-reload'))
+        return Promise.resolve(false);
+    // All settings/generator work happens before the first asynchronous turn.
+    const stylesheet = getStylesheet(obar, Me);
+    const snapshot = {obarRunDir: obar.obarRunDir, msHex: obar.msHex,
+        mhHex: obar.mhHex, smfgHex: obar.smfgHex};
+    const gtk = obar.gtkCSS ? gtkSnapshot(obar, 'enable') : null;
+    return queueStyleWrite(obar, async (cancellable, current) => {
+        await replaceFile(snapshot.obarRunDir.get_child('stylesheet.css'), stylesheet, cancellable);
+        if (!current()) return false;
+        await writeSVGs(snapshot, Me, cancellable, current);
+        if (!current()) return false;
+        if (gtk) await applyGtkCss(gtk, cancellable);
+        if (!current() || obar._settings !== settings) return false;
+        obar.msSVG = obar.mhSVG = obar.smfgSVG = false;
+        if (gtk) obar.gtkCSS = false;
+        settings.set_boolean('reloadstyle', !settings.get_boolean('reloadstyle'));
+        return true;
+    }, {latest: true});
 }
