@@ -22,7 +22,7 @@ printf 'Shell exit: %s; artifacts: %s\n' "$status" "$dir"
 if [ "$status" -ne 0 ] || [ ! -f "$dir/result" ]; then
     printf 'FAIL: no successful result; inspect shell.log\n'; exit 1
 fi
-if grep -E 'JS ERROR:|JS CRITICAL:|Unhandled promise rejection|Openbar: Error|Open Bar:.*failed|Error creating OpenBar|@file://.*/openbar@neuromorph/' "$dir/shell.log"; then
+if grep -E 'JS ERROR:|JS CRITICAL:|Gjs-CRITICAL|Clutter-WARNING|Theme parsing error|CSS parsing|Error in stylesheet|round2 panel regression failed|Unhandled promise rejection|Openbar: Error|Open Bar:.*failed|Error creating OpenBar|@file://.*/openbar@neuromorph/' "$dir/shell.log"; then
     printf 'FAIL: extension/test errors\n'; exit 1
 fi
 read -r result < "$dir/result"

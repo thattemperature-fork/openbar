@@ -3356,6 +3356,10 @@ function getStylesheet(obar, Me) {
         dashBorderColor = dBorder? dashBorderColor : 'transparent';
         dashShadowColor = dShadow? dashShadowColor : 'transparent';
 
+        // The configured icon is the inner size of its highlight button. Bound
+        // the coupled radius to half that size, not the potentially huge dock
+        // radius, so small buttons cannot acquire oversized circular corners.
+        const dashHighlightRadius = Math.max(0, Math.min(dbRadius, dIconSize / 2));
         stylesheet += `
         .dash-background {
             background-color: ${dashBgColor} !important;
@@ -3374,6 +3378,7 @@ function getStylesheet(obar, Me) {
             box-shadow: 1px 1px 0px rgba(25,25,25,0.1) !important;
         }
         .dash-item-container .app-well-app .overview-icon, .dash-item-container .overview-tile .overview-icon, .dash-item-container .show-apps .overview-icon {
+            border-radius: ${dashHighlightRadius}px !important;
             color: ${dashFgColor} !important;
             background-color: transparent !important;
         }

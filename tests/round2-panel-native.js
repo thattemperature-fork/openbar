@@ -72,9 +72,30 @@ async function test() {
         settings.set_double('bradius', 14);
         settings.set_boolean('set-overview', true);
         assert(await sheets.reloadStyle(obar, obar), 'generated Trilands stylesheet');
+        // Exercise the original native QuickSettings/hidden-sibling mechanism
+        // before the expanded native actor matrix below.
+        const quick = Main.panel.statusArea.quickSettings;
+        const nativeBox = quick.container.get_parent();
+        const nativeOrder = nativeBox.get_children();
+        const nativeVisibility = nativeOrder.map(bin => [bin.child, bin.child?.visible]);
+        try {
+            for (const [actor] of nativeVisibility) if (actor) actor.visible = actor === quick;
+            obar.setPanelStyle(null, 'notify::visible');
+            equal(radii(quick), [14, 14, 14, 14], 'actual native QuickSettings sole-visible corners');
+            assert(nativeBox.get_children().every((actor, i) => actor === nativeOrder[i]), 'actual native hidden sibling order preserved');
+        } finally {
+            for (const [actor, visible] of nativeVisibility) if (actor) actor.visible = visible;
+        }
+        // A sized native panel-shaped host avoids Shell.Panel's vfunc, which
+        // allocates only its three built-in boxes (not arbitrary test children).
+        const host = new St.BoxLayout({name: 'panel', style_class: 'openbar trilands', width: 400, height: 40});
         const box = new St.BoxLayout();
-        Main.panel.add_child(box);
-        const buttons = [0, 1, 2].map(i => new PanelMenu.Button(0, `round2-${i}`));
+        host.add_child(box); Main.uiGroup.add_child(host);
+        const buttons = [0, 1, 2].map(i => {
+            const button = new PanelMenu.Button(0, `round2-${i}`);
+            button.add_child(new St.Label({text: `button${i}`}));
+            return button;
+        });
         const bins = buttons.map(button => button.container);
         const unrelated = new St.Widget();
         box.add_child(unrelated);
@@ -120,7 +141,7 @@ async function test() {
             obar.panelBoxes = realBoxes;
             if (!obar.disabling) { obar.disable(); await obar._styleCleanup; }
             buttons.forEach(button => button.destroy());
-            box.destroy();
+            host.destroy();
             obar.enable(); await obar._runtimeAssetsReady;
         }
     } else if (group === 'selectors') {
@@ -155,6 +176,41 @@ async function test() {
                 equal(color(make('overview-tile', state, true)), color(active), `modern overview-tile/${state} accent`);
             for (const state of ['focus', 'selected'])
                 equal(color(make('overview-tile', state, true)), color(focus), `modern overview-tile/${state} selection`);
+        } finally { root.destroy(); }
+    } else if (group === 'dock') {
+        settings.set_boolean('apply-all-shell', false);
+        settings.set_boolean('apply-accent-shell', false);
+        const root = new St.BoxLayout({name: 'dash'}); Main.uiGroup.add_child(root);
+        try {
+            for (const mode of ['Custom', 'Bar', 'Menu']) {
+                settings.set_string('dashdock-style', mode);
+                for (const [radius, size] of [[45, 48], [0, 48], [200, 16], [8, 96]]) {
+                    settings.set_double('dbradius', radius); settings.set_double('disize', size);
+                    assert(await sheets.reloadStyle(obar, obar), `generate dock ${mode}/${radius}/${size}`);
+                    const background = new St.Widget({style_class: 'dash-background'}); root.add_child(background);
+                    equal(radii(background), [radius, radius, radius, radius], 'outer dock retains configured radius');
+                    background.destroy();
+                    for (const cls of ['app-well-app', 'overview-tile', 'show-apps']) {
+                        const item = new St.BoxLayout({style_class: 'dash-item-container'});
+                        const button = new St.Button({style_class: cls});
+                        const icon = new St.Widget({style_class: 'overview-icon', width: size, height: size});
+                        button.set_child(icon); item.add_child(button); root.add_child(item);
+                        for (const state of ['hover', 'focused', 'active']) {
+                            button.set_style_pseudo_class(state === 'focused' ? '' : state);
+                            if (state === 'focused') button.add_style_class_name('focused');
+                            else button.remove_style_class_name('focused');
+                            const expected = Math.min(radius, size / 2);
+                            equal(radii(icon), [expected, expected, expected, expected], `dock ${mode}/${cls}/${state} bounded highlight radius`);
+                            assert(icon.get_theme_node().get_background_color().alpha > 0, 'native dock highlight paints background');
+                        }
+                        item.destroy();
+                    }
+                }
+            }
+            settings.set_string('dashdock-style', 'Default');
+            assert(await sheets.reloadStyle(obar, obar), 'default dock generates without custom radius override');
+            const css = read(obar.obarRunDir.get_child('stylesheet.css').get_path());
+            assert(!css.includes('border-radius: 8px !important;\n            color:'), 'default dock has no coupled icon radius rule');
         } finally { root.destroy(); }
     } else {
         throw Error(`unimplemented test group ${group}`);
