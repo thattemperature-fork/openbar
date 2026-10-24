@@ -45,6 +45,7 @@ async function test() {
     await Scripting.sleep(1000);
     const path = `${dir}/openbar@neuromorph`;
     const {default: Openbar} = await import(`file://${path}/extension.js`);
+    const Styles = await import(`file://${path}/stylesheets.js`);
     const [, bytes] = GLib.file_get_contents(`${path}/metadata.json`);
     const metadata = {...JSON.parse(new TextDecoder().decode(bytes)), path, dir: Gio.File.new_for_path(path)};
     const wallpaper = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, false, 8, 32, 32);
@@ -112,9 +113,13 @@ async function test() {
             current = replace(button, 'disabled menustyle');
             assert(!current.menu.box.has_style_class_name('openmenu'), 'menustyle off does not tag replacement');
             settings.set_boolean('menustyle', true);
-            await Scripting.sleep(300);
+            // Completion is asynchronous; under concurrent compositor load a
+            // fixed 300ms can still sample the previous menustyle=false CSS.
+            if (!await Styles.reloadStyle(obar, obar))
+                throw Error('menustyle enable stylesheet did not publish');
             current = replace(button, 'enabled menustyle');
-            assert(color(current.row) === expected, 'menustyle on reconnects replacement discovery');
+            const actual = color(current.row);
+            assert(actual === expected, `menustyle on reconnects replacement discovery (${actual} vs ${expected})`);
             const outside = replace(unrelated, 'outside panel');
             assert(!outside.menu.box.has_style_class_name('openmenu'), 'unrelated button outside panel stays untagged');
             const late = new PanelMenu.Button(0.0, 'Late panel button');
