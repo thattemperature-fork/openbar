@@ -1036,7 +1036,13 @@ export function autoApplyBGPalette(obar, requestMode) {
     let colors = [bgcolor, bgcolor, bgcolor2, iscolor, shcolor, bcolor, bgcolorWmax, hcolor, mhcolor,
                     mbgcolor, smbgcolor, mbcolor, mshcolor, mscolor, mscolor, mscolor, mscolor];
 
+    const preserveWmax = obar._settings.get_boolean('autotheme-preserve-wmax');
     for(let i = 0; i < colorKeys.length; i++) {
+        // Preserve both the current color and each mode's custom backup. Normal
+        // mode changes still select that mode's backup; headerbar matching is
+        // a separate display policy, not a reason to discard stored colors.
+        if(preserveWmax && colorKeys[i] === 'bgcolor-wmax')
+            continue;
         obar._settings.set_strv(requestMode+'-'+colorKeys[i], colors[i]);
         if((requestMode == 'dark' && currentMode == 'prefer-dark') ||
             (requestMode == 'light' && currentMode != 'prefer-dark'))

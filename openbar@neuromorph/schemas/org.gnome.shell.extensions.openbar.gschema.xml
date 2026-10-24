@@ -957,6 +957,11 @@
       <summary>Change bar when window maximized</summary>
       <description>Change bar when window maximized.</description>
     </key>
+    <key type="b" name="autotheme-preserve-wmax">
+      <default>false</default>
+      <summary>Preserve custom WindowMax background</summary>
+      <description>Keep current and light/dark WindowMax background colors during automatic and manually requested auto-theme generation. Other palette colors still update. Disabled by default for historical auto-theme behavior. Headerbar matching, when enabled, still determines the displayed WindowMax background.</description>
+    </key>
     <key type="as" name="bgcolor-wmax">
       <default>['0.125', '0.125', '0.125']</default>
       <summary>BG Color (RGB) WMax</summary>
