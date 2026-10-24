@@ -360,6 +360,9 @@ function createGtkCss(obar, gtk4) {
     else
         vfgRed = vfgGreen = vfgBlue = 20;
 
+    // Backdrop hint mixing can cross the light/dark threshold independently.
+    const vbdFg = getBgDark(vbdRed, vbdGreen, vbdBlue) ? 255 : 20;
+
     let winShadowStyle = '', winBdShadowStyle = '';
     if(winShadow == 'Default') {
         winShadowStyle = '';
@@ -405,14 +408,37 @@ function createGtkCss(obar, gtk4) {
         background-color: @window_backdrop_color;
     }
 
-    @define-color view_bg_color rgba(${vbgRed}, ${vbgGreen}, ${vbgBlue}, ${viewAlpha});
-    @define-color view_backdrop_color rgb(${vbdRed}, ${vbdGreen}, ${vbdBlue});
-    @define-color view_fg_color rgb(${vfgRed}, ${vfgGreen}, ${vfgBlue});
-    .content-pane, .content-pane.view, .view {
-        background-color: @view_bg_color;
+    @define-color obar_view_bg_color rgba(${vbgRed}, ${vbgGreen}, ${vbgBlue}, ${viewAlpha});
+    @define-color obar_view_backdrop_color rgb(${vbdRed}, ${vbdGreen}, ${vbdBlue});
+    @define-color obar_view_fg_color rgb(${vfgRed}, ${vfgGreen}, ${vfgBlue});
+    /* Only actual generic collection views, never arbitrary .view classes.
+     * TextView is intentionally excluded: GTK has no selector contract that
+     * distinguishes an ordinary editor from an app's semantic note canvas.
+     * Exclude selection rather than repainting it at USER priority: preserve
+     * native active/focused/backdrop selection foreground/background together.
+     */
+    /* Labels may carry the native .view class for foreground contrast, but
+     * are not view canvases (including libadwaita's own .view background).
+     */
+    label.view {
+        background-color: transparent;
+        background-image: none;
     }
-    .content-pane:backdrop, .content-pane.view:backdrop, .view:backdrop {
-        background-color: @view_backdrop_color;
+    treeview.view:not(:selected),
+    iconview.view:not(:selected),
+    listview.view:not(:selected),
+    gridview.view:not(:selected),
+    columnview.view:not(:selected) {
+        background-color: @obar_view_bg_color;
+        color: @obar_view_fg_color;
+    }
+    treeview.view:backdrop:not(:selected),
+    iconview.view:backdrop:not(:selected),
+    listview.view:backdrop:not(:selected),
+    gridview.view:backdrop:not(:selected),
+    columnview.view:backdrop:not(:selected) {
+        background-color: @obar_view_backdrop_color;
+        color: rgb(${vbdFg}, ${vbdFg}, ${vbdFg});
     }
 
     @define-color accent_color rgba(${accRed}, ${accGreen}, ${accBlue}, 1.0);
