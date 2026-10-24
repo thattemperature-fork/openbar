@@ -43,6 +43,7 @@ Gio._promisify(Gio.File.prototype, "copy_async", "copy_finish");
 class ConnectManager{
     constructor(list = []){
         this.connections = [];
+        this.destroyConnections = new Map();
 
         list.forEach(c => {
             let [obj, signal, callback, callback_param] = c;
@@ -51,22 +52,27 @@ class ConnectManager{
     }
 
     connect(obj, signal, callback, callback_param){
+        if(this.connections.some(c => c.obj === obj && c.sig === signal &&
+            c.callback === callback && c.callback_param === callback_param))
+            return;
         this.connections.push({
             id : obj.connect(signal, (object, signal_param) => {callback(object, signal, signal_param, callback_param)}),
             obj: obj,
-            sig: signal
+            sig: signal,
+            callback, callback_param
         });
         // Remove obj on destroy except following that don't have destroy signal
-        if(!(obj instanceof Gio.Settings || obj instanceof LayoutManager.LayoutManager || obj instanceof Meta.WorkspaceManager | obj instanceof Meta.Display)) {
-            obj.connect('destroy', () => {
+        if(!this.destroyConnections.has(obj) && !(obj instanceof Gio.Settings || obj instanceof LayoutManager.LayoutManager || obj instanceof Meta.WorkspaceManager || obj instanceof Meta.Display || obj instanceof Meta.Window)) {
+            this.destroyConnections.set(obj, obj.connect('destroy', () => {
                 this.removeObject(obj)
-            });
+            }));
         }
     }
 
     // remove an object WITHOUT disconnecting it, use only when you know the object is destroyed
     removeObject(object){
         this.connections = this.connections.filter(({id, obj, sig}) => obj != object);
+        this.destroyConnections.delete(object);
     }
 
     disconnect(object, signal){
@@ -75,6 +81,10 @@ class ConnectManager{
             c.obj.disconnect(c.id);
         });
         this.connections = this.connections.filter(({id, obj, sig}) => obj != object || sig != signal);
+        if(!this.connections.some(c => c.obj === object) && this.destroyConnections.has(object)) {
+            object.disconnect(this.destroyConnections.get(object));
+            this.destroyConnections.delete(object);
+        }
     }
 
     disconnectAll(){
@@ -83,6 +93,10 @@ class ConnectManager{
             if(c.obj && c.id > 0)
                 c.obj.disconnect(c.id);
         })
+        this.connections = [];
+        for(const [obj, id] of this.destroyConnections)
+            obj.disconnect(id);
+        this.destroyConnections.clear();
     }
 }
 
@@ -97,6 +111,35 @@ export default class Openbar extends Extension {
         this._hcSettings = null;
         this._connections = null;
         this._injections = [];
+        this.panelBoxes = [];
+        this.msgLists = [];
+        this.msgListIds = [];
+        this._timeouts = new Map();
+    }
+
+    _queueTimeout(name, callback, delay) {
+        if(this[name])
+            clearTimeout(this[name]);
+        this[name] = null;
+        this._timeouts ??= new Map();
+        this._timeouts.delete(name);
+        if(this.disabling)
+            return;
+        this[name] = setTimeout(() => {
+            this._timeouts.delete(name);
+            this[name] = null;
+            if(!this.disabling)
+                callback();
+        }, delay);
+        this._timeouts.set(name, this[name]);
+    }
+
+    _cancelTimeouts() {
+        for(const [name, id] of this._timeouts ?? []) {
+            clearTimeout(id);
+            this[name] = null;
+        }
+        this._timeouts?.clear();
     }
 
     // Generate a color palette from desktop background image
@@ -373,6 +416,7 @@ export default class Openbar extends Extension {
                         const msgScroll = msgbox.get_child_at_index(0);
                         const sectionList = msgScroll.child;
                         if(add) {
+                            this._connections.disconnect(sectionList, this.addedSignal);
                             this._connections.connect(sectionList, this.addedSignal, (container, actor) => {
                                 // console.log('section added: ', actor.constructor.name);
                                 this.applySectionStyles(sectionList, add);
@@ -400,9 +444,8 @@ export default class Openbar extends Extension {
 
                             if(item.constructor.name === 'Calendar') {
                                 this.applyCalendarGridStyle(item, add);
-                                this.calendarTimeoutId = setTimeout(() => {
+                                this._queueTimeout('calendarTimeoutId', () => {
                                     this.applyCalendarGridStyle(item, add);
-                                    this.calendarTimeoutId = null;
                                 }, 250);
                             }
                         });
@@ -527,7 +570,7 @@ export default class Openbar extends Extension {
         // console.log('update called with ', key, sig_param, callbk_param);
         let panel = Main.panel;
 
-        if(!this._settings)
+        if(!this._settings || this.disabling)
             return;
 
         // Nothing to update if it's a color palette setting
@@ -913,35 +956,27 @@ export default class Openbar extends Extension {
     }
 
     onWindowAdded(obj, signal, windowActor){
-        if(windowActor) {
-            this._windowSignals.set(windowActor, [
-                windowActor.connect('notify::visible', () => this.setWindowMaxBar('notify-visible') ),
-            ]);
-
+        if(!this._windowSignals || this.disabling)
+            return;
+        if(windowActor && !this._windowSignals.has(windowActor)) {
+            const manager = new ConnectManager();
+            this._windowSignals.set(windowActor, manager);
+            manager.connect(windowActor, 'notify::visible', () => this.setWindowMaxBar('notify-visible'));
+            manager.connect(windowActor, 'destroy', () => {
+                manager.disconnectAll();
+                this._windowSignals?.delete(windowActor);
+            });
             if(windowActor.meta_window) {
-                this._windowSignals.set(windowActor.meta_window, [
-                    windowActor.meta_window.connect('notify::minimized', () => this.setWindowMaxBar('minimized') ),
-                    windowActor.meta_window.connect('size-changed', () => this.setWindowMaxBar('size-changed') ),
-                    windowActor.meta_window.connect('shown', () => this.setWindowMaxBar('shown') ),
-                ]);
+                for(const event of ['notify::minimized', 'size-changed', 'shown'])
+                    manager.connect(windowActor.meta_window, event, () => this.setWindowMaxBar(event));
             }
         }
         this.setWindowMaxBar(this.addedSignal);
     }
 
     onWindowRemoved(obj, signal, windowActor){
-        let winSigActors = [windowActor, windowActor.meta_window];
-        for(const winSigActor of winSigActors) {
-            if(winSigActor) {
-                let windowSignals = this._windowSignals.get(winSigActor);
-                if(windowSignals) {
-                    for (const id of windowSignals){
-                            winSigActor.disconnect(id);
-                    }
-                    this._windowSignals.delete(winSigActor);
-                }
-            }
-        }
+        this._windowSignals?.get(windowActor)?.disconnectAll();
+        this._windowSignals?.delete(windowActor);
         this.setWindowMaxBar(this.removedSignal);
     }
 
@@ -949,6 +984,8 @@ export default class Openbar extends Extension {
     onWindowMaxBar() {
         let wmaxbar = this._settings.get_boolean('wmaxbar');
         if(wmaxbar) {
+            if(this._windowSignals)
+                return;
             this._windowSignals = new Map();
             const windowActors = this.gnomeVersion < 48? global.get_window_actors() : global.compositor.get_window_actors();
             for(const window of windowActors){
@@ -968,42 +1005,40 @@ export default class Openbar extends Extension {
 
     disconnectWindowSignals() {
         if(this._windowSignals) {
-            for(const [windowActor, ids] of this._windowSignals) {
-                for(const id of ids) {
-                    // console.log('disconnectWindowSignals - id: ', id);
-                    if(windowActor && id > 0)
-                        windowActor.disconnect(id);
-                }
-            }
+            for(const manager of this._windowSignals.values())
+                manager.disconnectAll();
         }
         this._windowSignals = null;
     }
 
     onFullScreen(obj, signal, sig_param, timeout = 0) {
-        if(this._settings.get_boolean('set-fullscreen'))
+        if(this.onFullScrTimeoutId) {
+            clearTimeout(this.onFullScrTimeoutId);
+            this._timeouts?.delete('onFullScrTimeoutId');
+            this.onFullScrTimeoutId = null;
+        }
+        if(!this._settings || this.disabling || this._settings.get_boolean('set-fullscreen'))
             return;
 
         // Timeout to allow other extensions to move panel to another monitor
-        this.onFullScrTimeoutId =
-            setTimeout(() => {
-                // Check if panelBox is on the monitor which is in fullscreen
-                const LM = Main.layoutManager;
-                let panelBoxMonitor = this.getPanelMonitor()[0];
-                let panelFullMonFound = false;
-                for(const monitor of LM.monitors) {
-                    if(monitor.inFullscreen && monitor == panelBoxMonitor) {
-                        this.unloadStylesheet();
-                        this.isObarReset = true;
-                        panelFullMonFound = true;
-                        break;
-                    }
+        this._queueTimeout('onFullScrTimeoutId', () => {
+            // Check if panelBox is on the monitor which is in fullscreen
+            const LM = Main.layoutManager;
+            let panelBoxMonitor = this.getPanelMonitor()[0];
+            let panelFullMonFound = false;
+            for(const monitor of LM.monitors) {
+                if(monitor.inFullscreen && monitor == panelBoxMonitor) {
+                    this.unloadStylesheet();
+                    this.isObarReset = true;
+                    panelFullMonFound = true;
+                    break;
                 }
-                if(!panelFullMonFound && this.isObarReset) {
-                    this.loadStylesheet();
-                    this.isObarReset = false;
-                }
-                this.onFullScrTimeoutId = null;
-            }, timeout);
+            }
+            if(!panelFullMonFound && this.isObarReset) {
+                this.loadStylesheet();
+                this.isObarReset = false;
+            }
+        }, timeout);
     }
 
     onModeChange() {
@@ -1013,6 +1048,8 @@ export default class Openbar extends Extension {
     }
 
     updateBguri(obj, signal) {
+        if(!this._settings || this.disabling)
+            return;
         // console.log('update bguri called for signal ', signal);
         // If the function is triggered multiple times in succession, ignore till timeout
         if(this.updatingBguri) {
@@ -1020,9 +1057,8 @@ export default class Openbar extends Extension {
             return;
         }
         this.updatingBguri = true;
-        this.updatingBguriId = setTimeout(() => {
+        this._queueTimeout('updatingBguriId', () => {
             this.updatingBguri = false;
-            this.updatingBguriId = null;
         }, 5000);
         // console.log('==== Going ahead with bguri ====');
         let colorScheme = this._intSettings.get_string('color-scheme');
@@ -1031,7 +1067,7 @@ export default class Openbar extends Extension {
             return;
         }
 
-        this.updateBguriId = setTimeout(() => {
+        this._queueTimeout('updateBguriId', () => {
             let bguriDark = this._bgSettings.get_string('picture-uri-dark');
             let bguriLight = this._bgSettings.get_string('picture-uri');
             this._settings.set_string('dark-bguri', bguriDark);
@@ -1051,7 +1087,6 @@ export default class Openbar extends Extension {
                 // console.log('bguriOld == bguriNew - calling updatePanelStyle for bguri');
                 this.updatePanelStyle(this._settings, 'bguri');
             }
-            this.updateBguriId = null;
         }, 200);
     }
 
@@ -1302,9 +1337,9 @@ export default class Openbar extends Extension {
             for(const btn of box) {
                 if(btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) {
                     if(connect)
-                        this._connections.connect(btn.child, 'notify::visible', this.updateFittsWidgetVisible.bind(this, btn));
+                        this._fittsConnections.connect(btn.child, 'notify::visible', this.updateFittsWidgetVisible.bind(this, btn));
                     else
-                        this._connections.disconnect(btn.child, 'notify::visible');
+                        this._fittsConnections.disconnect(btn.child, 'notify::visible');
                 }
             }
         }
@@ -1326,9 +1361,8 @@ export default class Openbar extends Extension {
             (btn == panel.leftCornerButton || btn == panel.rightCornerButton)) ) {
             this.destroyFittsCornerWidgets();
             // Wait for Panel to update its x, width then create CornerWidgets
-            this.fittsCornerTimeoutId = setTimeout(() => {
+            this._queueTimeout('fittsCornerTimeoutId', () => {
                 this.createFittsCornerWidgets();
-                this.fittsCornerTimeoutId = null;
             }, 500);
         }
 
@@ -1336,43 +1370,63 @@ export default class Openbar extends Extension {
             return;
 
         if(key == this.addedSignal) {
-            this._connections.connect(btn.child, 'notify::visible', this.updateFittsWidgetVisible.bind(this, btn));
+            this._fittsConnections.disconnect(btn.child, 'notify::visible');
+            this._fittsConnections.connect(btn.child, 'notify::visible', this.updateFittsWidgetVisible.bind(this, btn));
             if(btn.child.visible)
                 this.createFittsWidget(box, btn);
         }
-        else if(key == this.removedSignal)
+        else if(key == this.removedSignal) {
+            this._fittsConnections.disconnect(btn.child, 'notify::visible');
             this.destroyFittsWidget(btn);
+            if(btn.destroyFittsId > 0)
+                btn.disconnect(btn.destroyFittsId);
+            delete btn.destroyFittsId;
+        }
     }
 
     connectFittsWidgetAddRemove(connect) {
         for(const box of this.panelBoxes) {
             if(connect) {
-                this._connections.connect(box, this.addedSignal, this.updateFittsWidgetAddRemove.bind(this));
-                this._connections.connect(box, this.removedSignal, this.updateFittsWidgetAddRemove.bind(this));
+                this._fittsConnections.connect(box, this.addedSignal, this.updateFittsWidgetAddRemove.bind(this));
+                this._fittsConnections.connect(box, this.removedSignal, this.updateFittsWidgetAddRemove.bind(this));
             }
             else {
-                this._connections.disconnect(box, this.addedSignal);
-                this._connections.disconnect(box, this.removedSignal);
+                this._fittsConnections.disconnect(box, this.addedSignal);
+                this._fittsConnections.disconnect(box, this.removedSignal);
             }
         }
     }
 
     enableFittsWidgets() {
+        if(this.disabling || this._fittsEnabled)
+            return;
+        this._fittsEnabled = true;
+        this._fittsConnections = new ConnectManager();
         this.addRemoveFittsWidgets(true);
         this.connectFittsWidgetVisible(true);
         this.connectFittsWidgetAddRemove(true);
     }
 
     disableFittsWidgets() {
+        for(const name of ['fittsEnableTimeoutId', 'fittsCornerTimeoutId']) {
+            if(this[name])
+                clearTimeout(this[name]);
+            this[name] = null;
+            this._timeouts?.delete(name);
+        }
+        if(!this._fittsConnections)
+            return;
+        this._fittsEnabled = false;
         this.connectFittsWidgetAddRemove(false);
         this.connectFittsWidgetVisible(false);
         this.addRemoveFittsWidgets(false);
+        this._fittsConnections.disconnectAll();
+        this._fittsConnections = null;
     }
 
     postStartup() {
-        this.postStartupId = setTimeout(() => {
+        this._queueTimeout('postStartupId', () => {
             this.setPanelStyle(null, 'post-startup');
-            this.postStartupId = null;
         }, 2000);
     }
 
@@ -1430,7 +1484,8 @@ export default class Openbar extends Extension {
         }
 
         // Connect to the settings changes
-        this._settings.connect('changed', (settings, key) => {
+        this._connections = new ConnectManager();
+        this._connections.connect(this._settings, 'changed', (settings, signal, key) => {
             this.updatePanelStyle(settings, key);
         });
 
@@ -1476,16 +1531,16 @@ export default class Openbar extends Extension {
         }
 
         // Setup all connections
-        this._connections = new ConnectManager(connections);
+        for(const [obj, signal, callback, param] of connections)
+            this._connections.connect(obj, signal, callback, param);
 
         // Setup connections for addition of new QSAP extension panels
         if(this.gnomeVersion > 42)
             this.setupLibpanel(null, 'enabled', null, Main.panel.statusArea.quickSettings.menu);
 
         // Connect to background manager (give time for it to be available)
-        this.bgMgrTimeOutId = setTimeout(() => {
+        this._queueTimeout('bgMgrTimeOutId', () => {
             this.connectPrimaryBGChanged();
-            this.bgMgrTimeOutId = null;
         }, 2000);
         // Set initial bguri as per color-scheme
         const bguri = this._settings.get_string('bguri');
@@ -1501,8 +1556,9 @@ export default class Openbar extends Extension {
 
         // Update calendar style on Calendar rebuild through fn injection
         const obar = this;
+        this._calendarInjectionTarget = Main.panel.statusArea.dateMenu._calendar;
         this._injections["_rebuildCalendar"] = this._injectToFunction(
-            Main.panel.statusArea.dateMenu._calendar,
+            this._calendarInjectionTarget,
             "_rebuildCalendar",
             function () {
                 if(!obar._settings) {
@@ -1550,10 +1606,9 @@ export default class Openbar extends Extension {
         let menustyle = this._settings.get_boolean('menustyle');
         this.applyMenuStyles(panel, menustyle);
         // Refresh to fix any indicators added during initial styling
-        this.enableStyleTimeoutId = setTimeout(() => {
+        this._queueTimeout('enableStyleTimeoutId', () => {
             this.updatePanelStyle(null, 'enabled');
             this.applyMenuStyles(panel, menustyle);
-            this.enableStyleTimeoutId = null;
         }, 1000);
 
         // Set initial Window Max Bar
@@ -1574,63 +1629,27 @@ export default class Openbar extends Extension {
         // Enable button proximity to interact with panel buttons without having to point precisely at them.
         const fittsWidgets = this._settings.get_boolean('fitts-widgets');
         if(fittsWidgets && !dtpOn)
-            this.fittsEnableTimeoutId = setTimeout(() => {
+            this._queueTimeout('fittsEnableTimeoutId', () => {
                 this.enableFittsWidgets();
-                this.fittsEnableTimeoutId = null;
             }, 5000);
     }
 
     disable() {
         this.disabling = true;
+        this._cancelTimeouts();
 
         // Get the top panel
         let panel = Main.panel;
 
         this.disableFittsWidgets();
 
-        this._connections.disconnectAll();
+        this._connections?.disconnectAll();
         this._connections = null;
         this._primaryBGManager = null;
         this._backgroundSettingsConnected = false;
 
         this.disconnectWindowSignals();
 
-        if(this.calendarTimeoutId > 0) {
-            clearTimeout(this.calendarTimeoutId);
-            this.calendarTimeoutId = null;
-        }
-        if(this.updatingBguriId > 0) {
-            clearTimeout(this.updatingBguriId);
-            this.updatingBguriId = null;
-        }
-        if(this.updateBguriId > 0) {
-            clearTimeout(this.updateBguriId);
-            this.updateBguriId = null;
-        }
-        if(this.bgMgrTimeOutId > 0) {
-            clearTimeout(this.bgMgrTimeOutId);
-            this.bgMgrTimeOutId = null;
-        }
-        if(this.onFullScrTimeoutId > 0) {
-            clearTimeout(this.onFullScrTimeoutId);
-            this.onFullScrTimeoutId = null;
-        }
-        if(this.postStartupId > 0) {
-            clearTimeout(this.postStartupId);
-            this.postStartupId = null;
-        }
-        if(this.enableStyleTimeoutId > 0) {
-            clearTimeout(this.enableStyleTimeoutId);
-            this.enableStyleTimeoutId = null;
-        }
-        if(this.fittsEnableTimeoutId > 0) {
-            clearTimeout(this.fittsEnableTimeoutId);
-            this.fittsEnableTimeoutId = null;
-        }
-        if(this.fittsCornerTimeoutId > 0) {
-            clearTimeout(this.fittsCornerTimeoutId);
-            this.fittsCornerTimeoutId = null;
-        }
 
         for(let i=0; i<this.msgLists.length; i++) {
             if(this.msgListIds[i]) {
@@ -1644,7 +1663,9 @@ export default class Openbar extends Extension {
         this.msgLists = [];
         this.msgListIds = [];
 
-        this._removeInjection(Calendar.Calendar.prototype, this._injections, "_rebuildCalendar");
+        if(Object.hasOwn(this._injections, '_rebuildCalendar'))
+            this._removeInjection(this._calendarInjectionTarget, this._injections, "_rebuildCalendar");
+        this._calendarInjectionTarget = null;
         this._injections = [];
 
         // Remove style class from Panel and PanelBox
@@ -1661,15 +1682,18 @@ export default class Openbar extends Extension {
         this.applyMenuStyles(panel, false);
 
         // Unload stylesheet
-        this.unloadStylesheet();
+        if(this.themeContext && this.obarRunDir)
+            this.unloadStylesheet();
 
         // Reset panel and banner position to Top
         this.setPanelBoxPosition('Top');
         Main.messageTray._bannerBin.y_align = Clutter.ActorAlign.START;
 
         // Clear/Restore Gtk css and Flatpak override
-        StyleSheets.saveGtkCss(this, 'disable');
-        StyleSheets.saveFlatpakOverrides(this, 'disable');
+        if(this._settings) {
+            StyleSheets.saveGtkCss(this, 'disable');
+            StyleSheets.saveFlatpakOverrides(this, 'disable');
+        }
 
         this.main = null;
         this._settings = null;

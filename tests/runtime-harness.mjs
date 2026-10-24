@@ -25,7 +25,7 @@ export function fixture() {
     const panel = {has_style_pseudo_class: () => false, remove_style_pseudo_class() {}, remove_style_class_name() {}};
     const Main = {layoutManager, panel, messageTray: {_bannerBin: {}}};
     const context = {console, Main, Gio: {Settings, File: {prototype: {}}, _promisify() {}},
-        Meta: {WorkspaceManager: class {}, Display: class {}}, LayoutManager: {LayoutManager: Layout},
+        Meta: {WorkspaceManager: class {}, Display: class {}, Window: class {}}, LayoutManager: {LayoutManager: Layout},
         Extension: class {}, Calendar: {Calendar: class {}}, Clutter: {ActorAlign: {START: 0}},
         AutoThemes: {getClosestGnomeAccent: () => 'red', getClosestYaruTheme: () => 'red'},
         StyleSheets: {saveGtkCss() {}, saveFlatpakOverrides() {}, reloadStyle() {}},
