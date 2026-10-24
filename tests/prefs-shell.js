@@ -9,7 +9,7 @@ export function init() {
             const launcher = new Gio.SubprocessLauncher({flags: Gio.SubprocessFlags.STDERR_MERGE});
             launcher.set_stdout_file_path(`${dir}/gtk.log`);
             launcher.setenv('WAYLAND_DISPLAY', GLib.getenv('WAYLAND_DISPLAY'), true);
-            if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions')
+            if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions' || GLib.getenv('OPENBAR_PREFS_MODE').startsWith('service'))
                 launcher.setenv('GSETTINGS_BACKEND', 'dconf', true);
             const child = launcher.spawnv([GLib.getenv('OPENBAR_PREFS_GJS'), '-m', `${repo}/tests/prefs-native.js`]);
             await new Promise((resolve, reject) => child.wait_async(null, (p, r) => {

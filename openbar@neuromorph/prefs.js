@@ -24,6 +24,7 @@ import Gtk from 'gi://Gtk';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
 import {ExtensionPreferences, gettext as _, pgettext} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 const SCHEMA_PATH = '/org/gnome/shell/extensions/openbar/';
@@ -443,6 +444,7 @@ class OpenbarPrefs {
     }
 
     _buildOpenbarPrefs(window, openbar) {
+        this._window = window;
         this._application = window.get_application();
         // Get the settings object
         this._settings = openbar.getSettings();
@@ -3033,6 +3035,49 @@ class OpenbarPrefs {
         dialog.present();
     }
 
+    _deferWindowClose() {
+        const window = this._window;
+        if (!window || this._closed)
+            return () => {};
+        // The host connects close-request before loading this module. A later
+        // handler returning true cannot undo the host's earlier service.release().
+        // Temporarily block existing handlers on THIS window, then replay exactly
+        // one close after the transaction has restored and flushed its settings.
+        const blocked = [];
+        const signal = GObject.signal_lookup('close-request', Gtk.Window.$gtype);
+        let guard = 0;
+        let requested = false;
+        const restore = () => {
+            if (guard && GObject.signal_handler_is_connected(window, guard))
+                window.disconnect(guard);
+            for (const id of blocked) {
+                if (GObject.signal_handler_is_connected(window, id))
+                    window.unblock_signal_handler(id);
+            }
+        };
+        try {
+            let id;
+            while ((id = GObject.signal_handler_find(window,
+                GObject.SignalMatchType.ID | GObject.SignalMatchType.UNBLOCKED,
+                signal, 0, null, null, null))) {
+                window.block_signal_handler(id);
+                blocked.push(id);
+            }
+            guard = window.connect('close-request', () => {
+                requested = true;
+                return true;
+            });
+        } catch (error) {
+            restore();
+            throw error;
+        }
+        return () => {
+            restore();
+            if (requested && !this._closed)
+                window.close();
+        };
+    }
+
     async _settingsTransaction(action, reload = false) {
         if (settingsTransactionActive)
             throw new Error(_('Another settings operation is already in progress.'));
@@ -3041,7 +3086,9 @@ class OpenbarPrefs {
         const saved = new Map();
         let succeeded = false;
         let held = false;
+        let finishClose = () => {};
         try {
+            finishClose = this._deferWindowClose();
             if (this._application) {
                 this._application.hold();
                 held = true;
@@ -3067,8 +3114,12 @@ class OpenbarPrefs {
                 Gio.Settings.sync();
             } finally {
                 settingsTransactionActive = false;
-                if (held)
-                    this._application.release();
+                try {
+                    finishClose();
+                } finally {
+                    if (held)
+                        this._application.release();
+                }
             }
         }
     }

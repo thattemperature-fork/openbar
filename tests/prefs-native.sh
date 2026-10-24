@@ -26,7 +26,14 @@ dir=$(mktemp -d "$TMPDIR/openbar-prefs.XXXXXX")
 export OPENBAR_PREFS_DIR="$dir" OPENBAR_PREFS_REPO="$repo" OPENBAR_PREFS_MODE="${1:-lifecycle}" OPENBAR_PREFS_GJS="$(command -v gjs)"
 mkdir -p "$dir/home" "$dir/run" "$dir/gnome-shell/extensions"
 chmod 700 "$dir/run"
-cp -r "$repo/openbar@neuromorph" "$dir/gnome-shell/extensions/"
+cp -rL "$repo/openbar@neuromorph" "$dir/gnome-shell/extensions/"
+source_prefs="$repo/openbar@neuromorph/prefs.js"
+copy_prefs="$dir/gnome-shell/extensions/openbar@neuromorph/prefs.js"
+# Fail before appending exports or source-ref replacement if fixtures alias source.
+if [ "$(realpath "$source_prefs")" = "$(realpath "$copy_prefs")" ] || [ "$source_prefs" -ef "$copy_prefs" ]; then
+    printf 'Unsafe preferences fixture aliases source\n' >&2
+    exit 1
+fi
 if [ -n "${OPENBAR_PREFS_SOURCE_REF:-}" ]; then
     git -C "$repo" show "$OPENBAR_PREFS_SOURCE_REF:openbar@neuromorph/prefs.js" > "$dir/gnome-shell/extensions/openbar@neuromorph/prefs.js"
 fi

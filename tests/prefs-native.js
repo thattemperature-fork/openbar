@@ -84,6 +84,89 @@ async function lifecycle() {
     lateWindow.destroy();
     Gio.Settings.prototype.connect = originalConnect;
 }
+async function serviceLifetime() {
+    const {ExtensionsService, extensionManager} = await import('resource:///org/gnome/Shell/Extensions/js/extensionsService.js');
+    const {serializeExtension} = await import('resource:///org/gnome/Shell/Extensions/js/misc/extensionUtils.js');
+    const serialized = serializeExtension(extensionManager.lookup('openbar@neuromorph'));
+    const service = new ExtensionsService();
+    // Only fixture discovery is substituted: actual dialog construction, handler
+    // order, hold/release and the native two-second shutdown policy are untouched.
+    service._proxy.GetExtensionInfoAsync = async () => [serialized];
+    let prefs;
+    const build = OpenbarPrefs.prototype._buildOpenbarPrefs;
+    OpenbarPrefs.prototype._buildOpenbarPrefs = function (...args) {
+        prefs = this;
+        return build.apply(this, args);
+    };
+    let settled = false, shutdown = false;
+    service.connect('shutdown', () => {
+        shutdown = true;
+        if (!settled) {
+            printerr(`FAIL actual ExtensionsService shutdown before transaction completion: import-export=${settings.get_boolean('import-export')}`);
+            // Match the production service: no extra harness loop rescues callbacks.
+            imports.system.exit(1);
+        }
+    });
+    await service.OpenExtensionPrefsAsync(['openbar@neuromorph', '', {}], {
+        return_value() {}, return_gerror(e) {throw e;}, return_dbus_error(_n, m) {throw Error(m);},
+    });
+    const window = service._prefsDialog;
+    await new Promise(resolve => window.connect('loaded', resolve));
+    OpenbarPrefs.prototype._buildOpenbarPrefs = build;
+    assert(!window.get_application() && !Gio.Application.get_default(), 'actual service dialog has no GApplication');
+    const failing = GLib.getenv('OPENBAR_PREFS_MODE') === 'service-error';
+    const file = Gio.File.new_for_path(`${dir}/service-import.ini`);
+    GLib.file_set_contents(file.get_path(), '[/]\nheight=43.0\n');
+    settings.set_double('height', 29);
+    settings.set_boolean('import-export', false);
+    settings.set_boolean('pause-reload', false);
+    Gio.Settings.sync();
+    const reload = settings.get_boolean('trigger-reload');
+    let entered;
+    const entry = new Promise(resolve => {entered = resolve;});
+    const spawn = Gio.Subprocess.new;
+    const communicate = Gio.Subprocess.prototype.communicate_utf8_async;
+    let childDone = false;
+    Gio.Subprocess.new = (argv, flags) => spawn(['sh', '-c', failing ? 'sleep 5; printf child-failed >&2; exit 23' : 'sleep 5; exec "$@"', 'openbar-delayed-dconf', ...argv], flags);
+    Gio.Subprocess.prototype.communicate_utf8_async = function (input, cancellable, callback) {
+        communicate.call(this, input, cancellable, (p, result) => {
+            childDone = true;
+            GLib.timeout_add(0, 150, () => {callback(p, result); return GLib.SOURCE_REMOVE;});
+        });
+        entered();
+    };
+    // Preserve a preblocked third-party handler without accidentally unblocking it.
+    let blockedCalls = 0;
+    const preblocked = window.connect('close-request', () => {blockedCalls++; return false;});
+    window.block_signal_handler(preblocked);
+    let closeCalls = 0;
+    window.connect('close-request', () => {closeCalls++; return false;});
+    const started = GLib.get_monotonic_time();
+    // Attach the failure observer immediately so the test itself has no unhandled rejection.
+    const pending = prefs._importSettingsFile(file).then(() => null, error => error);
+    await entry;
+    assert(settings.get_boolean('import-export') && !childDone, 'real slow dconf child entered under transaction pause');
+    window.close();
+    window.close();
+    await sleep(3500);
+    assert(!shutdown && !childDone && settings.get_boolean('import-export'), 'user close cannot release service while real child is pending past idle timeout');
+    assert(service._prefsDialog === window && !prefs._closed, 'close is deferred without losing host dialog tracking or UI ownership');
+    const error = await pending;
+    settled = true;
+    Gio.Subprocess.new = spawn;
+    Gio.Subprocess.prototype.communicate_utf8_async = communicate;
+    assert(GLib.get_monotonic_time() - started > 5000000 && childDone, 'slow real child and delayed completion are awaited');
+    assert(failing ? String(error).includes('child-failed') : error === null, 'real child failure is propagated instead of silently discarded');
+    assert(settings.get_double('height') === (failing ? 29 : 43) && !settings.get_boolean('import-export') && !settings.get_boolean('pause-reload'), 'real child outcome persists and both pause flags restore before service exit');
+    assert((settings.get_boolean('trigger-reload') !== reload) === !failing, 'only successful deferred-close import emits final reload');
+    assert(closeCalls === 1 && blockedCalls === 0, 'repeated close replays handlers once and preserves previously blocked handlers');
+    assert(!service._prefsDialog && prefs._closed && !prefs.cssProvider && prefs._settingsSignals.length === 0, 'deferred close replays host release once and cleans preferences resources');
+    await sleep(4000);
+    assert(shutdown, 'actual service auto-shuts down normally after completed deferred close');
+    const dump = Gio.Subprocess.new(['dconf', 'read', '/org/gnome/shell/extensions/openbar/import-export'], Gio.SubprocessFlags.STDOUT_PIPE);
+    const [, stdout] = dump.communicate_utf8(null, null);
+    assert(dump.get_successful() && stdout.trim() === 'false', 'separate real dconf reader sees durable restored pause');
+}
 async function transactions() {
     const prefs = new OpenbarPrefs();
     const app = new Adw.Application({application_id: 'org.example.OpenbarPrefsRegression', flags: Gio.ApplicationFlags.NON_UNIQUE});
@@ -247,7 +330,8 @@ async function main() {
     await setup();
     print(`GTK ${Gtk.get_major_version()}.${Gtk.get_minor_version()}.${Gtk.get_micro_version()}`);
     settings.set_int('monitor-width', 1024); settings.set_int('monitor-height', 768);
-    if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions') await transactions();
+    if (GLib.getenv('OPENBAR_PREFS_MODE').startsWith('service')) await serviceLifetime();
+    else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'transactions') await transactions();
     else if (GLib.getenv('OPENBAR_PREFS_MODE') === 'layout') await layout();
     else await lifecycle();
     print('PASS preferences native regression complete');
