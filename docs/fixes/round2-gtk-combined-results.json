@@ -1,0 +1,24 @@
+[
+  {
+    "gtk": "4.22.4",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-gtk.YjHH4K",
+    "assertions": 109,
+    "suites": {
+      "view3": 9,
+      "view4": 4,
+      "traffic3": 29,
+      "traffic4": 67
+    }
+  },
+  {
+    "gtk": "4.20.3",
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-gtk.dIIW6d",
+    "assertions": 109,
+    "suites": {
+      "view3": 9,
+      "view4": 4,
+      "traffic3": 29,
+      "traffic4": 67
+    }
+  }
+]

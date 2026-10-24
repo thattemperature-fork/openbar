@@ -68,7 +68,31 @@ native allocation/scroll invariant with a bounded deadline and retains the same
 final assertion. This was a harness timing correction, not a weakened minimum
 size requirement.
 
-Independent review and final combined results are recorded when complete.
+## Combined execution evidence
+
+Parent combined tree passed `tests/run-round2-regressions.sh` on native GNOME
+49.4 and 50.4: all 17 preserved suites plus seven new native suites per version.
+The new recording/Trilands/selector/dock suites additionally passed on48.2.
+[Exact completion-file readbacks](round2-combined-results.json) contain52 native
+runs, with no unexpected extension stacks or unhandled promise matches. These
+results precede any final independent-review corrections and must be supplemented
+if production source changes afterward.
+
+Native GTK3/GTK4 view and traffic-light tests passed109 assertions per coherent
+GTK4.20.3 and4.22.4 dependency set; [details](round2-gtk-combined-results.json).
+All23 real filesystem/ownership scenarios passed at `openbar-writes.crRaFw`.
+Preferences lifecycle, private-dconf transactions and layout passed onGTK4.18.6,
+4.20.3 and4.22.4; [nine result readbacks](round2-prefs-combined-results.json)
+include78 validated allocations over13 pages/two widths/three runtimes. The
+WindowMax preference binding is additionally tested in both directions.
+
+Syntax checks of every production/test JS/MJS and bash runner, existing runtime
+and palette fast regressions, and baseline-relative whitespace checks passed.
+A scratch-copy extension bundle with all new source/schema/assets built
+successfully. Packaging is not installation or deployment.
+
+Independent-review conclusions and any correction reruns are recorded when
+complete; passing worker suites are not substituted for integrated verification.
 
 ## Explicit remaining limits
 

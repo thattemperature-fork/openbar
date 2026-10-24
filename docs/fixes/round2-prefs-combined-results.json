@@ -1,0 +1,689 @@
+{
+  "note": "Parent combined source; corrected native-allocation wait used for final GTK4.20 layout; lifecycle switch added during first4.20 run and separately verified on4.22/4.18",
+  "results": [
+    {
+      "gtk": "4.22.4",
+      "mode": "lifecycle",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.bD63V7",
+      "passLines": 18
+    },
+    {
+      "gtk": "4.22.4",
+      "mode": "transactions",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.tnJSyt",
+      "passLines": 27
+    },
+    {
+      "gtk": "4.22.4",
+      "mode": "layout",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.yxH6LZ",
+      "passLines": 38,
+      "measurements": [
+        {
+          "width": 820,
+          "page": "welcome",
+          "allocated": 451,
+          "minimum": 291,
+          "upper": 451,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "autotheme",
+          "allocated": 685,
+          "minimum": 629,
+          "upper": 685,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "barprops",
+          "allocated": 630,
+          "minimum": 409,
+          "upper": 630,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "wmaxbar",
+          "allocated": 662,
+          "minimum": 404,
+          "upper": 662,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "barfg",
+          "allocated": 451,
+          "minimum": 397,
+          "upper": 451,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "barbg",
+          "allocated": 564,
+          "minimum": 547,
+          "upper": 564,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "highlights",
+          "allocated": 570,
+          "minimum": 570,
+          "upper": 570,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "barborder",
+          "allocated": 604,
+          "minimum": 604,
+          "upper": 604,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "menu",
+          "allocated": 451,
+          "minimum": 333,
+          "upper": 451,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "dashdock",
+          "allocated": 634,
+          "minimum": 478,
+          "upper": 634,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "shell",
+          "allocated": 612,
+          "minimum": 441,
+          "upper": 612,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "gtkflatpak",
+          "allocated": 664,
+          "minimum": 481,
+          "upper": 664,
+          "viewport": 451
+        },
+        {
+          "width": 820,
+          "page": "importexport",
+          "allocated": 667,
+          "minimum": 667,
+          "upper": 667,
+          "viewport": 451
+        },
+        {
+          "width": 640,
+          "page": "welcome",
+          "allocated": 364,
+          "minimum": 291,
+          "upper": 364,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "autotheme",
+          "allocated": 685,
+          "minimum": 629,
+          "upper": 685,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "barprops",
+          "allocated": 630,
+          "minimum": 409,
+          "upper": 630,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "wmaxbar",
+          "allocated": 662,
+          "minimum": 404,
+          "upper": 662,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "barfg",
+          "allocated": 397,
+          "minimum": 397,
+          "upper": 397,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "barbg",
+          "allocated": 564,
+          "minimum": 547,
+          "upper": 564,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "highlights",
+          "allocated": 570,
+          "minimum": 570,
+          "upper": 570,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "barborder",
+          "allocated": 604,
+          "minimum": 604,
+          "upper": 604,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "menu",
+          "allocated": 364,
+          "minimum": 333,
+          "upper": 364,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "dashdock",
+          "allocated": 634,
+          "minimum": 478,
+          "upper": 634,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "shell",
+          "allocated": 612,
+          "minimum": 441,
+          "upper": 612,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "gtkflatpak",
+          "allocated": 664,
+          "minimum": 481,
+          "upper": 664,
+          "viewport": 364
+        },
+        {
+          "width": 640,
+          "page": "importexport",
+          "allocated": 667,
+          "minimum": 667,
+          "upper": 667,
+          "viewport": 364
+        }
+      ]
+    },
+    {
+      "gtk": "4.20.3",
+      "mode": "lifecycle",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.J7YME4",
+      "passLines": 12
+    },
+    {
+      "gtk": "4.20.3",
+      "mode": "transactions",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.oII4q9",
+      "passLines": 27
+    },
+    {
+      "gtk": "4.20.3",
+      "mode": "layout",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.rGGdyw",
+      "passLines": 38,
+      "measurements": [
+        {
+          "width": 820,
+          "page": "welcome",
+          "allocated": 432,
+          "minimum": 313,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "autotheme",
+          "allocated": 748,
+          "minimum": 670,
+          "upper": 748,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barprops",
+          "allocated": 686,
+          "minimum": 438,
+          "upper": 686,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "wmaxbar",
+          "allocated": 722,
+          "minimum": 432,
+          "upper": 722,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barfg",
+          "allocated": 432,
+          "minimum": 421,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barbg",
+          "allocated": 613,
+          "minimum": 579,
+          "upper": 613,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "highlights",
+          "allocated": 620,
+          "minimum": 620,
+          "upper": 620,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barborder",
+          "allocated": 642,
+          "minimum": 642,
+          "upper": 642,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "menu",
+          "allocated": 432,
+          "minimum": 355,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "dashdock",
+          "allocated": 691,
+          "minimum": 514,
+          "upper": 691,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "shell",
+          "allocated": 667,
+          "minimum": 472,
+          "upper": 667,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "gtkflatpak",
+          "allocated": 724,
+          "minimum": 516,
+          "upper": 724,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "importexport",
+          "allocated": 714,
+          "minimum": 714,
+          "upper": 714,
+          "viewport": 432
+        },
+        {
+          "width": 640,
+          "page": "welcome",
+          "allocated": 345,
+          "minimum": 313,
+          "upper": 345,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "autotheme",
+          "allocated": 748,
+          "minimum": 670,
+          "upper": 748,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barprops",
+          "allocated": 686,
+          "minimum": 438,
+          "upper": 686,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "wmaxbar",
+          "allocated": 722,
+          "minimum": 432,
+          "upper": 722,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barfg",
+          "allocated": 421,
+          "minimum": 421,
+          "upper": 421,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barbg",
+          "allocated": 613,
+          "minimum": 579,
+          "upper": 613,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "highlights",
+          "allocated": 620,
+          "minimum": 620,
+          "upper": 620,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barborder",
+          "allocated": 642,
+          "minimum": 642,
+          "upper": 642,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "menu",
+          "allocated": 355,
+          "minimum": 355,
+          "upper": 355,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "dashdock",
+          "allocated": 691,
+          "minimum": 514,
+          "upper": 691,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "shell",
+          "allocated": 667,
+          "minimum": 472,
+          "upper": 667,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "gtkflatpak",
+          "allocated": 724,
+          "minimum": 516,
+          "upper": 724,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "importexport",
+          "allocated": 714,
+          "minimum": 714,
+          "upper": 714,
+          "viewport": 345
+        }
+      ]
+    },
+    {
+      "gtk": "4.18.6",
+      "mode": "lifecycle",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.aofEZm",
+      "passLines": 18
+    },
+    {
+      "gtk": "4.18.6",
+      "mode": "transactions",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.G71EV7",
+      "passLines": 27
+    },
+    {
+      "gtk": "4.18.6",
+      "mode": "layout",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.4OUJPs",
+      "passLines": 38,
+      "measurements": [
+        {
+          "width": 820,
+          "page": "welcome",
+          "allocated": 432,
+          "minimum": 313,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "autotheme",
+          "allocated": 748,
+          "minimum": 670,
+          "upper": 748,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barprops",
+          "allocated": 686,
+          "minimum": 438,
+          "upper": 686,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "wmaxbar",
+          "allocated": 722,
+          "minimum": 432,
+          "upper": 722,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barfg",
+          "allocated": 432,
+          "minimum": 421,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barbg",
+          "allocated": 613,
+          "minimum": 579,
+          "upper": 613,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "highlights",
+          "allocated": 620,
+          "minimum": 620,
+          "upper": 620,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "barborder",
+          "allocated": 642,
+          "minimum": 642,
+          "upper": 642,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "menu",
+          "allocated": 432,
+          "minimum": 355,
+          "upper": 432,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "dashdock",
+          "allocated": 691,
+          "minimum": 514,
+          "upper": 691,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "shell",
+          "allocated": 667,
+          "minimum": 472,
+          "upper": 667,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "gtkflatpak",
+          "allocated": 724,
+          "minimum": 516,
+          "upper": 724,
+          "viewport": 432
+        },
+        {
+          "width": 820,
+          "page": "importexport",
+          "allocated": 700,
+          "minimum": 700,
+          "upper": 700,
+          "viewport": 432
+        },
+        {
+          "width": 640,
+          "page": "welcome",
+          "allocated": 345,
+          "minimum": 313,
+          "upper": 345,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "autotheme",
+          "allocated": 748,
+          "minimum": 670,
+          "upper": 748,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barprops",
+          "allocated": 686,
+          "minimum": 438,
+          "upper": 686,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "wmaxbar",
+          "allocated": 722,
+          "minimum": 432,
+          "upper": 722,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barfg",
+          "allocated": 421,
+          "minimum": 421,
+          "upper": 421,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barbg",
+          "allocated": 613,
+          "minimum": 579,
+          "upper": 613,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "highlights",
+          "allocated": 620,
+          "minimum": 620,
+          "upper": 620,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "barborder",
+          "allocated": 642,
+          "minimum": 642,
+          "upper": 642,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "menu",
+          "allocated": 355,
+          "minimum": 355,
+          "upper": 355,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "dashdock",
+          "allocated": 691,
+          "minimum": 514,
+          "upper": 691,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "shell",
+          "allocated": 667,
+          "minimum": 472,
+          "upper": 667,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "gtkflatpak",
+          "allocated": 724,
+          "minimum": 516,
+          "upper": 724,
+          "viewport": 345
+        },
+        {
+          "width": 640,
+          "page": "importexport",
+          "allocated": 700,
+          "minimum": 700,
+          "upper": 700,
+          "viewport": 345
+        }
+      ]
+    }
+  ]
+}
