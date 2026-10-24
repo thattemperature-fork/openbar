@@ -4,12 +4,15 @@ import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
+import GdkPixbuf from 'gi://GdkPixbuf';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Scripting from 'resource:///org/gnome/shell/ui/scripting.js';
 import * as Config from 'resource:///org/gnome/shell/misc/config.js';
 import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {CheckBox} from 'resource:///org/gnome/shell/ui/checkBox.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import Openbar from '../openbar@neuromorph/extension.js';
 import * as Utils from '../openbar@neuromorph/utils.js';
 
 let checks = 0;
@@ -74,6 +77,175 @@ async function tests() {
     const root = new St.BoxLayout({vertical: true, width: 700, height: 500});
     Main.uiGroup.add_child(root);
     try {
+        if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'fitts-session') {
+            root.hide();
+            const path = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_child('openbar@neuromorph').get_path();
+            const {ExtensionType, ExtensionState} = await import('resource:///org/gnome/shell/misc/extensionUtils.js');
+            const wallpaper = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, false, 8, 32, 32);
+            wallpaper.fill(0x5380b0ff); wallpaper.savev(`${dir}/wallpaper.png`, 'png', [], []);
+            const background = new Gio.Settings({schema_id: 'org.gnome.desktop.background'});
+            const uri = Gio.File.new_for_path(`${dir}/wallpaper.png`).get_uri();
+            background.set_string('picture-uri', uri); background.set_string('picture-uri-dark', uri);
+            await Scripting.sleep(300);
+            const manager = Main.extensionManager;
+            const metadata = JSON.parse(read(`${path}/metadata.json`));
+            const extension = manager.createExtensionObject(metadata.uuid, Gio.File.new_for_path(path), ExtensionType.PER_USER);
+            manager.enableExtension(metadata.uuid);
+            await Scripting.sleep(200);
+            await manager.loadExtension(extension);
+            await Scripting.sleep(6000);
+            equal(extension.state, ExtensionState.ACTIVE, 'extension manager activated extension');
+            const supported = parseInt(Config.PACKAGE_VERSION) < 50;
+            equal(!!Main.panel.leftFittsWidget, supported, 'manager initial Fitts policy');
+            for (let cycle = 0; cycle < 2; cycle++) {
+                // Mode transitions only: do not invoke ScreenShield or authentication.
+                Main.sessionMode.pushMode('unlock-dialog');
+                await Scripting.sleep(500);
+                equal(extension.state, ExtensionState.INACTIVE, 'unlock-dialog mode deactivates user extension');
+                assert(!Main.panel.leftFittsWidget, 'unlock-dialog mode removes Fitts');
+                Main.sessionMode.popMode('unlock-dialog');
+                await Scripting.sleep(6000);
+                equal(extension.state, ExtensionState.ACTIVE, 'return to user mode activates extension');
+                equal(!!Main.panel.leftFittsWidget, supported, 'Fitts restored or gated after user-mode return');
+            }
+            manager.disableExtension(metadata.uuid);
+            await Scripting.sleep(500);
+            equal(extension.state, ExtensionState.INACTIVE, 'manager final disable');
+            assert(!Main.panel.leftFittsWidget, 'manager final corner cleanup');
+        }
+        if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'fitts-lifecycle') {
+            root.hide();
+            const path = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_child('openbar@neuromorph').get_path();
+            const metadata = {...JSON.parse(read(`${path}/metadata.json`)), path, dir: Gio.File.new_for_path(path)};
+            const wallpaper = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, false, 8, 32, 32);
+            wallpaper.fill(0x5380b0ff); wallpaper.savev(`${dir}/wallpaper.png`, 'png', [], []);
+            const background = new Gio.Settings({schema_id: 'org.gnome.desktop.background'});
+            const uri = Gio.File.new_for_path(`${dir}/wallpaper.png`).get_uri();
+            background.set_string('picture-uri', uri); background.set_string('picture-uri-dark', uri);
+            await Scripting.sleep(300);
+            const extension = new Openbar(metadata);
+            for (let cycle = 0; cycle < 2; cycle++) {
+                extension.enable();
+                await Scripting.sleep(6000);
+                const supported = parseInt(Config.PACKAGE_VERSION) < 50;
+                equal(!!Main.panel.leftFittsWidget, supported, `cycle ${cycle} real delayed enable gate`);
+                if (supported) {
+                    const settings = extension._settings;
+                    settings.set_boolean('fitts-widgets', false);
+                    await Scripting.sleep(100);
+                    assert(!Main.panel.leftFittsWidget, 'real setting disables Fitts');
+                    settings.set_boolean('fitts-widgets', true);
+                    await Scripting.sleep(100);
+                    assert(Main.panel.leftFittsWidget, 'real setting reenables Fitts');
+                }
+                extension._settings.set_string('position', 'Bottom');
+                await Scripting.sleep(200);
+                equal(!!Main.panel.leftFittsWidget, supported, `cycle ${cycle} real position-change gate`);
+                extension._settings.set_string('position', 'Top');
+                await Scripting.sleep(200);
+                extension.disable();
+                assert(!Main.panel.leftFittsWidget && !Main.panel.rightFittsWidget, 'lifecycle disable removes corners');
+                await Scripting.sleep(1000);
+                assert(!Main.panel.leftFittsWidget, 'no corner resurrection after disable');
+            }
+        }
+        if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'fitts') {
+            settings.set_boolean('fitts-widgets', true);
+            const fitts = Object.create(Openbar.prototype);
+            Object.assign(fitts, {
+                _settings: settings, _shellSettings: new Gio.Settings({schema_id: 'org.gnome.shell'}),
+                gnomeVersion: 50, disabling: false,
+                panelBoxes: [Main.panel._leftBox, Main.panel._centerBox, Main.panel._rightBox],
+                addedSignal: 'child-added', removedSignal: 'child-removed',
+            });
+            // Actual ConnectManager implementation; do not duplicate signal semantics.
+            const extensionSource = read(Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_child('openbar@neuromorph/extension.js').get_path());
+            const {default: Meta} = await import('gi://Meta');
+            const LayoutManager = await import('resource:///org/gnome/shell/ui/layout.js');
+            const Manager = new Function('Gio', 'Meta', 'LayoutManager', extensionSource.slice(extensionSource.indexOf('class ConnectManager'), extensionSource.indexOf('// Openbar Extension main class')) + '\nreturn ConnectManager;')(Gio, Meta, LayoutManager);
+            fitts._connections = new Manager();
+            const oldPanelStyle = Main.panel.get_style();
+            Main.panel.set_style('margin-top: 8px;');
+            // ConnectObject owner is intentionally unparented, not a rendered widget.
+            const target = new PanelMenu.Button(0, 'Fitts fixture');
+            target.add_child(new St.Label({text: 'Edge'}));
+            Main.panel.addToStatusArea('openbar-fitts-fixture', target, 0, 'left');
+            await Scripting.sleep(100);
+            const btn = target.get_parent();
+            try {
+                fitts._connections.connect(target, 'notify::visible', () => {});
+                fitts._connections.connect(Main.panel._leftBox, fitts.addedSignal, () => {});
+                const coreConnections = fitts._connections.connections.length;
+                fitts.enableFittsWidgets();
+                assert(!Main.panel.leftFittsWidget && !Main.panel.rightFittsWidget, 'GNOME 50 enable gate');
+                fitts.createFittsWidget(btn.get_parent(), btn);
+                assert(!btn.FittsWidget, 'GNOME 50 direct/visibility gate');
+                fitts.createFittsCornerWidgets();
+                assert(!Main.panel.leftFittsWidget && !Main.panel.rightFittsWidget, 'GNOME 50 delayed corner gate');
+                fitts.disableFittsWidgets();
+                equal(fitts._connections.connections.length, coreConnections, 'inactive Fitts disable preserves core signals');
+                // Exercise supported-version behavior on real actors on both runtimes.
+                fitts.gnomeVersion = 49;
+                for (const direction of [Clutter.TextDirection.LTR, Clutter.TextDirection.RTL]) {
+                    Main.panel.set_text_direction(direction);
+                    for (const box of fitts.panelBoxes) box.set_text_direction(direction);
+                    Main.panel.queue_relayout();
+                    await Scripting.sleep(100);
+                    fitts.enableFittsWidgets();
+                    await Scripting.sleep(100);
+                    const buttons = fitts.panelBoxes.flatMap(box => [...box]).filter(b => (b.child instanceof PanelMenu.Button || b.child instanceof PanelMenu.ButtonBox) && b.child.visible);
+                    const physical = buttons.map(b => ({btn: b, x: b.get_transformed_position()[0], width: b.get_transformed_size()[0]})).sort((a,b) => a.x - b.x);
+                    assert(Main.panel.leftCornerButton === physical[0].btn, `left corner targets physical leftmost button dir=${direction}: ${physical.map(p => `${p.btn.child.constructor.name}:${p.x}:${p.width}`)}`);
+                    assert(Main.panel.rightCornerButton === physical.at(-1).btn, 'right corner targets physical rightmost button');
+                    assert(Main.panel.leftFittsWidget.width <= physical[0].x - Main.layoutManager.panelBox.x + 3, 'left corner stays outside button area');
+                    assert(Main.panel.rightFittsWidget.x >= physical.at(-1).x + physical.at(-1).width - 3, 'right corner stays outside button area');
+                    const connections = fitts._connections.connections.length;
+                    fitts.enableFittsWidgets();
+                    equal(fitts._connections.connections.length, connections, 'repeat enable is idempotent');
+                    target.hide(); await Scripting.sleep(100);
+                    assert(!btn.FittsWidget, 'hidden button proximity removed');
+                    target.show(); await Scripting.sleep(100);
+                    assert(btn.FittsWidget, 'visible button proximity restored');
+                    const late = new PanelMenu.Button(0, 'Late Fitts fixture');
+                    late.add_child(new St.Label({text: 'Late'}));
+                    Main.panel.addToStatusArea('openbar-fitts-late', late, 0, 'center');
+                    await Scripting.sleep(600);
+                    assert(late.get_parent().FittsWidget, 'late button gets proximity');
+                    equal(fitts._connections.connections.length, coreConnections, 'late Fitts signals are owned separately');
+                    for (let i = 0; i < 3; i++) {
+                        late.hide(); late.show();
+                    }
+                    let destroys = 0;
+                    const destroy = fitts.destroyFittsWidget;
+                    fitts.destroyFittsWidget = function (button) { destroys++; return destroy.call(this, button); };
+                    late.destroy();
+                    fitts.destroyFittsWidget = destroy;
+                    equal(destroys, 1, 'one destroy hook after repeated visibility changes');
+                    await Scripting.sleep(600);
+                    fitts.disableFittsWidgets();
+                    equal(fitts._connections.connections.length, coreConnections, 'Fitts toggle preserves core subscriptions');
+                    assert(!btn.FittsWidget && !Main.panel.leftFittsWidget && !Main.panel.rightFittsWidget, 'disable removes all proximity actors');
+                    fitts.disabling = true;
+                    fitts.createFittsCornerWidgets(); fitts.enableFittsWidgets();
+                    assert(!Main.panel.leftFittsWidget, 'late callbacks blocked after disable');
+                    fitts.disabling = false;
+                }
+                fitts._shellSettings.set_strv('enabled-extensions', ['dash-to-panel@jderose9.github.com']);
+                fitts.enableFittsWidgets();
+                assert(!Main.panel.leftFittsWidget, 'Dash-to-Panel gate covers position resets');
+                fitts._shellSettings.set_strv('enabled-extensions', []);
+                settings.set_boolean('fitts-widgets', false);
+                fitts.enableFittsWidgets();
+                assert(!Main.panel.leftFittsWidget, 'setting gate covers delayed startup');
+            } finally {
+                fitts.disableFittsWidgets();
+                fitts._connections.disconnectAll();
+                target.destroy();
+                Main.panel.set_style(oldPanelStyle);
+                Main.panel.set_text_direction(Clutter.TextDirection.LTR);
+                for (const box of fitts.panelBoxes) box.set_text_direction(Clutter.TextDirection.LTR);
+            }
+        }
         if (GLib.getenv('OPENBAR_WIDGET_TEST') === 'gradient') {
             // Exercise real theme-node pseudo-class transitions with all bar layouts.
             root.hide();

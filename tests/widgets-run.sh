@@ -5,6 +5,7 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 : "${TMPDIR:?Scratch TMPDIR required}"
 dir=$(mktemp -d "$TMPDIR/openbar-widgets.XXXXXX")
 export OPENBAR_TEST_DIR="$dir" OPENBAR_WIDGET_TEST="${1:-quick}"
+case "$OPENBAR_WIDGET_TEST" in quick|switches|gradient|fitts|fitts-lifecycle|fitts-session) ;; *) printf 'Unknown widget test: %s\n' "$OPENBAR_WIDGET_TEST" >&2; exit 2;; esac
 mkdir -m 700 "$dir/run" "$dir/home" "$dir/schemas" "$dir/assets"
 cp "$repo/openbar@neuromorph/media/assets/"*.svg "$dir/assets/"
 cp "$repo/openbar@neuromorph/schemas/"*.xml "$dir/schemas/"

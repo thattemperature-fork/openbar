@@ -1142,7 +1142,17 @@ export default class Openbar extends Extension {
         }
     }
 
+    supportsFittsWidgets() {
+        // Gate every entry point, including delayed callbacks and position resets.
+        return !this.disabling && this.gnomeVersion < 50 &&
+            !!this._settings?.get_boolean('fitts-widgets') &&
+            !this._shellSettings?.get_strv('enabled-extensions')
+                .includes('dash-to-panel@jderose9.github.com');
+    }
+
     createFittsWidget(box, btn) {
+        if (!this._fittsActive || !this.supportsFittsWidgets())
+            return;
         let panel = Main.panel;
         let panelBox = Main.layoutManager.panelBox;
         let position = this._settings.get_string('position');
@@ -1165,7 +1175,11 @@ export default class Openbar extends Extension {
                 btn.FittsWidget.y = panelBox.y + panelBox.height - btn.FittsWidget.height;
 
             // Connect to btn destroy signal to also destroy its FittsWidget
-            btn.destroyFittsId = btn.connect('destroy', () => {this.destroyFittsWidget(btn);});
+            if (!btn.destroyFittsId)
+                btn.destroyFittsId = btn.connect('destroy', () => {
+                    this.destroyFittsWidget(btn);
+                    delete btn.destroyFittsId;
+                });
 
             // Bind x of FittsWidget to params it depends on: panelBox.x + panel.x + box.x + btn.x
             btn.bind_property_full('x', btn.FittsWidget, 'x', GObject.BindingFlags.SYNC_CREATE,
@@ -1228,82 +1242,67 @@ export default class Openbar extends Extension {
     }
 
     createFittsCornerWidgets() {
-        let panel = Main.panel;
-        let panelBox = Main.layoutManager.panelBox;
-
-        for(const idx of [0, 1]) {
-            if((idx == 0 && !panel.leftFittsWidget) || (idx == 1 && !panel.rightFittsWidget)) {
-                let widget = new St.Widget({
-                    x: (idx == 0) ? panelBox.x : panelBox.x + panelBox.width - panel.x - panel._leftBox.x - 2, // 2 for border width
-                    width: panel.x + panel._leftBox.x + 2,
-                    y: panelBox.y,
-                    height: panelBox.height,
-                    reactive: true,
-                    track_hover: true,
-                    visible: true,
-                    // style: 'background-color: rgba(200, 100, 0, 0.35);'
-                });
-
-                if(idx == 0) { // Bind x of leftFittsWidget to params it depends on: panelBox.x
-                    panelBox.bind_property('x', widget, 'x', GObject.BindingFlags.SYNC_CREATE);
+        if (!this._fittsActive || !this.supportsFittsWidgets())
+            return;
+        const panel = Main.panel;
+        const panelBox = Main.layoutManager.panelBox;
+        // _leftBox/_rightBox are logical: Shell swaps their allocations in RTL.
+        // Select by actual stage bounds instead of assuming child list order.
+        const buttons = this.panelBoxes.flatMap(box => [...box]).filter(btn =>
+            btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox);
+        for (const side of ['left', 'right']) {
+            const widgetKey = `${side}FittsWidget`;
+            const buttonKey = `${side}CornerButton`;
+            if (panel[widgetKey])
+                continue;
+            const widget = new St.Widget({reactive: true, track_hover: true});
+            const update = () => {
+                const visible = this.panelBoxes.flatMap(box => [...box])
+                    .filter(btn => (btn.child instanceof PanelMenu.Button || btn.child instanceof PanelMenu.ButtonBox) &&
+                        btn.child.visible && btn.width > 0)
+                    .map(btn => {
+                        const [x] = btn.get_transformed_position();
+                        const [width] = btn.get_transformed_size();
+                        return {btn, x, right: x + width};
+                    });
+                const edge = side === 'left'
+                    ? visible.sort((a, b) => a.x - b.x)[0]
+                    : visible.sort((a, b) => b.right - a.right)[0];
+                panel[buttonKey] = edge?.btn;
+                if (!edge) {
+                    widget.hide();
+                    return;
                 }
-                else { // Bind x of rightFittsWidget to params it depends on: panelBox.x + panelBox.width - panel.x - panel._leftBox.x - 2
-                    panelBox.bind_property_full('x', widget, 'x', GObject.BindingFlags.SYNC_CREATE,
-                        (bind, value) => [true, value + panelBox.width - panel.x - panel._leftBox.x - 2], null);
-                    panelBox.bind_property_full('width', widget, 'x', GObject.BindingFlags.SYNC_CREATE,
-                        (bind, value) => [true, panelBox.x + value - panel.x - panel._leftBox.x - 2], null);
-                    panel.bind_property_full('x', widget, 'x', GObject.BindingFlags.SYNC_CREATE,
-                        (bind, value) => [true, panelBox.x + panelBox.width - value - panel._leftBox.x - 2], null);
-                    panel._leftBox.bind_property_full('x', widget, 'x', GObject.BindingFlags.SYNC_CREATE,
-                        (bind, value) => [true, panelBox.x + panelBox.width - panel.x - value - 2], null);
-                }
-                // Bind width of FittsWidget to params it depends on: panel.x + panel._leftBox.x + 2
-                panel.bind_property_full('x', widget, 'width', GObject.BindingFlags.SYNC_CREATE,
-                    (bind, value) => [true, value + panel._leftBox.x + 2], null);
-                panel._leftBox.bind_property_full('x', widget, 'width', GObject.BindingFlags.SYNC_CREATE,
-                    (bind, value) => [true, panel.x + value + 2], null);
-                // Bind y of FittsWidget to params it depends on: panelBox.y
-                panelBox.bind_property('y', widget, 'y', GObject.BindingFlags.SYNC_CREATE);
-                // Bind height of FittsWidget to params it depends on: panelBox.height
-                panelBox.bind_property('height', widget, 'height', GObject.BindingFlags.SYNC_CREATE);
-
-                // Get leftmost or rightmost visible button in the panel
-                let btn, box;
-                box = (idx == 0) ? this.panelBoxes[0] : this.panelBoxes[2];
-                for(const boxBtn of box) {
-                    if((boxBtn.child instanceof PanelMenu.Button ||
-                        boxBtn.child instanceof PanelMenu.ButtonBox) &&
-                        boxBtn.child.visible)
-                        btn = boxBtn;
-                        if(idx == 0)
-                            break;
-                }
-
-                // Connect signals for hover
-                widget.connect('enter-event', (actor, event) => {
-                    btn.child.add_style_pseudo_class('hover');
-                    return Clutter.EVENT_PROPAGATE;
-                });
-                widget.connect('leave-event', (actor, event) => {
-                    btn.child.remove_style_pseudo_class('hover');
-                    return Clutter.EVENT_PROPAGATE;
-                });
-                // Connect signals for captured-event
-                widget.connect('captured-event', (actor, event) => {
-                    btn.child.event(event, false);
-                    return Clutter.EVENT_PROPAGATE;
-                });
-
-                if(idx == 0) {
-                    panel.leftCornerButton = btn;
-                    panel.leftFittsWidget = widget;
-                }
-                else {
-                    panel.rightCornerButton = btn;
-                    panel.rightFittsWidget = widget;
-                }
-                Main.layoutManager.addChrome(widget, {trackFullscreen: true});
-            }
+                const [x, y] = panelBox.get_transformed_position();
+                const [width, height] = panelBox.get_transformed_size();
+                // At most two border pixels overlap the target, never the menu.
+                const boundary = side === 'left'
+                    ? Math.min(x + width, Math.max(x, edge.x + 2))
+                    : Math.max(x, Math.min(x + width, edge.right - 2));
+                widget.set_position(side === 'left' ? x : boundary, y);
+                widget.set_size(side === 'left' ? boundary - x : x + width - boundary, height);
+                widget.visible = widget.width > 0 && height > 0;
+            };
+            // Widget destruction releases these geometry/visibility connections.
+            for (const actor of [panelBox, panel, ...this.panelBoxes, ...buttons])
+                actor.connectObject('notify::allocation', update, widget);
+            for (const btn of buttons)
+                btn.child.connectObject('notify::visible', update, widget);
+            widget.connect('enter-event', () => {
+                panel[buttonKey]?.child.add_style_pseudo_class('hover');
+                return Clutter.EVENT_PROPAGATE;
+            });
+            widget.connect('leave-event', () => {
+                panel[buttonKey]?.child.remove_style_pseudo_class('hover');
+                return Clutter.EVENT_PROPAGATE;
+            });
+            widget.connect('captured-event', (actor, event) => {
+                panel[buttonKey]?.child.event(event, false);
+                return Clutter.EVENT_PROPAGATE;
+            });
+            panel[widgetKey] = widget;
+            Main.layoutManager.addChrome(widget, {trackFullscreen: true});
+            update();
         }
     }
 
@@ -1424,9 +1423,14 @@ export default class Openbar extends Extension {
     }
 
     enableFittsWidgets() {
-        if(this.disabling || this._fittsEnabled)
+        if (!this.supportsFittsWidgets()) {
+            if (this._fittsActive)
+                this.disableFittsWidgets();
             return;
-        this._fittsEnabled = true;
+        }
+        if (this._fittsActive)
+            return;
+        this._fittsActive = true;
         this._fittsConnections = new ConnectManager();
         this.addRemoveFittsWidgets(true);
         this.connectFittsWidgetVisible(true);
@@ -1434,20 +1438,17 @@ export default class Openbar extends Extension {
     }
 
     disableFittsWidgets() {
+        this._fittsActive = false;
         for(const name of ['fittsEnableTimeoutId', 'fittsCornerTimeoutId']) {
             if(this[name])
                 clearTimeout(this[name]);
             this[name] = null;
             this._timeouts?.delete(name);
         }
-        if(!this._fittsConnections)
-            return;
-        this._fittsEnabled = false;
-        this.connectFittsWidgetAddRemove(false);
-        this.connectFittsWidgetVisible(false);
-        this.addRemoveFittsWidgets(false);
-        this._fittsConnections.disconnectAll();
+        this._fittsConnections?.disconnectAll();
         this._fittsConnections = null;
+        if(this.panelBoxes)
+            this.addRemoveFittsWidgets(false);
     }
 
     postStartup() {
