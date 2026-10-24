@@ -1,0 +1,46 @@
+{
+  "baseline": "ffba24d4391e987fafbdf38fb9abb4fe4a0b91ae",
+  "reviewed_implementation": "4521be199ecd770794dd2f10fc8ff4987f78e894",
+  "reviews": [
+    {
+      "area": "extension-panel-geometry-menus",
+      "passed": true,
+      "blockers": [],
+      "executed": "Native Shell50.4 geometry890, visibility17, Trilands44, traversal492, runtime26 and menu root60 assertions; fast geometry64 combinations, alpha dispatch, QSAP, legacy45-47 and tagged45-50 contracts",
+      "limits": "Private/native and actual-source fixtures, not physical fullscreen, capture, actual third-party QSAP or old-runtime certification"
+    },
+    {
+      "area": "gtk-css-autotheme",
+      "passed": true,
+      "blockers": [],
+      "executed": "Native GTK view3=9/view4=4/traffic3=29/traffic4=67; GTK3 HighContrast9; native autotheme191; writer23; native panel and previous widgets/palette regressions",
+      "nonblocking": "Extend GTK4 collection row and high-contrast coverage; contrast remains bounded to tested palettes/transparency",
+      "limits": "Native mechanisms, not full target app integration or independent running application provider refresh"
+    },
+    {
+      "area": "preferences",
+      "passed": false,
+      "blockers": [
+        {
+          "file": "openbar@neuromorph/prefs.js",
+          "lines_at_review": "446;3045-3048;3070-3071",
+          "severity": "high",
+          "summary": "Actual ExtensionPrefsDialog has no GApplication; ExtensionsService owns a separate hold/release counter. Closing the last real preferences window can auto-shutdown service while accepted import/export still holds import-export=true.",
+          "evidence": "/var/lib/hermes/.hermes/cache/scratch/openbar-prefs.31D8fo/gtk.log",
+          "regression_gap": "Original lifecycle transaction test supplies an artificial Adw.Application, which is not the production hosting contract",
+          "correction_status": "RESOLVED: object-local transaction close guard, actual ExtensionsService/Dialog GREEN; independently re-reviewed PASS and parent reran service/error/transactions/lifecycle/layout on GTK4.18/4.20/4.22"
+        }
+      ],
+      "other_scope": "No other blocker in schema serialization/prevalidation, sequential128-key batches with documented partial application, settings operation exclusion, handler/timer/provider cleanup, pre-realize destruction, responsive layout, or preserveWmax UI",
+      "harness_incident": "Reviewer supplemental copy used a symlink; test setup appended export and compiled schema in staging twice. Exact artifacts restored and supplemental harness replaced with independent copied files. Standard committed runner uses disposable copies."
+    }
+  ],
+  "final_service_review": {
+    "passed": true,
+    "security_concerns": [],
+    "logic_errors": [],
+    "summary": "Actual service blocker resolved. Independent bounded review executed real service and service-error modes on50.4; both12 assertions passed, followed by native transaction suite. Parent verified final15 preference runs312 assertions on GTK4.18/4.20/4.22 and repeated complete48-run Shell matrix49/50.",
+    "evidence": "round2-prefs-service.md; round2-prefs-final-results.json; round2-final-results.json"
+  },
+  "note": "Earlier preferences passed=false is historical and retained to document the caught blocker; final_service_review resolves it. Parent independently verified exact final artifacts. Native mechanisms do not certify every third-party integration."
+}

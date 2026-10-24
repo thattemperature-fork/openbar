@@ -1,5 +1,15 @@
 # TODO fix index
 
+## Second audit follow-up
+
+The subsequent issue/PR re-audit and remaining-mechanism fixes start at
+`ffba24d4391e987fafbdf38fb9abb4fe4a0b91ae`.
+[Complete second-pass fix map, final review and limits](round2-integration.md).
+Final verification includes the complete native49/50 matrix, actual GNOME
+preferences-service lifetime regression, private-dconf import/export, GTK3/GTK4
+rendering and48-series preferences/panel coverage. Original first-pass records
+below remain historical evidence, not universal compatibility certification.
+
 Baseline: `1aa1eb345530df8b6e362a5fa1362d48ac8cffc6` on `fixing`.
 Every numbered TODO was researched against upstream discussions and actual source;
 linked documents record the specific plan, RED/GREEN evidence and boundaries.

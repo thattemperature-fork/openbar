@@ -1,0 +1,299 @@
+{
+  "scope": "Final source after actual preferences-service lifetime correction; complete combined Shell matrix",
+  "nativeRuns": 48,
+  "results": [
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.nOcwFh",
+      "result": "PASS Shell 50.4: integration: 56 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.iQiVUh",
+      "result": "PASS Shell 50.4: runtime: 26 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.vONMWr",
+      "result": "{\n  \"shell\": \"50.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 248.759,\n      \"maxFrameGapMs\": 272.909,\n      \"maxEventLoopGapMs\": 249.33,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 150.844,\n      \"maxFrameGapMs\": 56.851,\n      \"maxEventLoopGapMs\": 32.964,\n      \"frameCount\": 18,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 178.655,\n      \"maxFrameGapMs\": 31.877,\n      \"maxEventLoopGapMs\": 22.719,\n      \"frameCount\": 21,\n      \"samples\": 9216\n    }\n  ]\n}",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-import.N6bs9w",
+      "result": "PASS Shell 50.4: palette-import: 18 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-fitts-review.hdD9Py",
+      "result": "PASS: GNOME 50.4 Fitts review all: 61 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.iIO5KB",
+      "result": "PASS: 1319 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.zgPK15",
+      "result": "PASS Shell 50.4: menu-modern: 46 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.8stAgD",
+      "result": "PASS Shell 50.4: menu-modern-root: 60 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.E8bpYC",
+      "result": "PASS Shell 50.4: date-menu: 9 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.QbyZcQ",
+      "result": "PASS Shell 50.4: lifecycle: 24 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.MW5LsA",
+      "result": "PASS: GNOME 50.4 quick: 768 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.fei7qm",
+      "result": "PASS: GNOME 50.4 switches: 708 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.lRzpVI",
+      "result": "PASS: GNOME 50.4 gradient: 128 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.mF0lfB",
+      "result": "PASS: GNOME 50.4 fitts: 32 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.tS7pOw",
+      "result": "PASS: GNOME 50.4 fitts-lifecycle: 8 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.DxhGT1",
+      "result": "PASS: GNOME 50.4 fitts-session: 12 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.h3Bcpj",
+      "result": "PASS integration assets: 8 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-geometry.eSqTVR",
+      "result": "PASS Shell 50.4: round2 geometry/fullscreen: 890 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-traversal.Fw7V0z",
+      "result": "PASS round2-traversal Shell 50.4: 492 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-autotheming.WCztQ6",
+      "result": "{\"shell\":\"50.4\",\"assertions\":191}",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-visibility.FQl0gU",
+      "result": "PASS Shell 50.4 visibility: 17 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-trilands.fALCR8",
+      "result": "PASS Shell 50.4 trilands: 44 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-selectors.xBmm6O",
+      "result": "PASS Shell 50.4 selectors: 23 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "50.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-dock.aEK6iR",
+      "result": "PASS Shell 50.4 dock: 244 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.X66DHB",
+      "result": "PASS Shell 49.4: integration: 56 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-runtime-test.td1311",
+      "result": "PASS Shell 49.4: runtime: 26 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-native.KnNxXL",
+      "result": "{\n  \"shell\": \"49.4\",\n  \"assertions\": 23,\n  \"measurements\": [\n    {\n      \"label\": \"baseline\",\n      \"elapsedMs\": 239.671,\n      \"maxFrameGapMs\": 255.914,\n      \"maxEventLoopGapMs\": 240.623,\n      \"frameCount\": 12,\n      \"samples\": 562000\n    },\n    {\n      \"label\": \"fixed\",\n      \"elapsedMs\": 116.605,\n      \"maxFrameGapMs\": 21.147,\n      \"maxEventLoopGapMs\": 15.326,\n      \"frameCount\": 19,\n      \"samples\": 9216\n    },\n    {\n      \"label\": \"fixed-warm\",\n      \"elapsedMs\": 118.359,\n      \"maxFrameGapMs\": 24.988,\n      \"maxEventLoopGapMs\": 19.851,\n      \"frameCount\": 19,\n      \"samples\": 9216\n    }\n  ]\n}",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-palette-import.giYL9s",
+      "result": "PASS Shell 49.4: palette-import: 18 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-fitts-review.Nn1r3r",
+      "result": "PASS: GNOME 49.4 Fitts review all: 75 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-test.htwSlM",
+      "result": "PASS: 1319 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern.uiFQjE",
+      "result": "PASS Shell 49.4: menu-modern: 46 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.GEoku1",
+      "result": "PASS Shell 49.4: menu-modern-root: 60 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-date-menu-test.zjf5T1",
+      "result": "PASS Shell 49.4: date-menu: 9 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-lifecycle-test.2Yp9W6",
+      "result": "PASS Shell 49.4: lifecycle: 24 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.cPtgVy",
+      "result": "PASS: GNOME 49.4 quick: 768 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.legVuD",
+      "result": "PASS: GNOME 49.4 switches: 708 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.BMQ106",
+      "result": "PASS: GNOME 49.4 gradient: 128 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.pVGBkA",
+      "result": "PASS: GNOME 49.4 fitts: 32 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.2PA7at",
+      "result": "PASS: GNOME 49.4 fitts-lifecycle: 12 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-widgets.0GNTEO",
+      "result": "PASS: GNOME 49.4 fitts-session: 12 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-integration.TdzlXQ",
+      "result": "PASS integration assets: 8 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-geometry.9QWyQb",
+      "result": "PASS Shell 49.4: round2 geometry/fullscreen: 890 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-traversal.a77mwu",
+      "result": "PASS round2-traversal Shell 49.4: 492 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-autotheming.0mURiD",
+      "result": "{\"shell\":\"49.4\",\"assertions\":191}",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-visibility.MkSDGX",
+      "result": "PASS Shell 49.4 visibility: 17 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-trilands.m9X8As",
+      "result": "PASS Shell 49.4 trilands: 44 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-selectors.uYddvu",
+      "result": "PASS Shell 49.4 selectors: 23 assertions\n",
+      "extensionErrors": []
+    },
+    {
+      "shell": "49.4",
+      "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-round2-panel-dock.mDdAUp",
+      "result": "PASS Shell 49.4 dock: 244 assertions\n",
+      "extensionErrors": []
+    }
+  ],
+  "intermediateFailure": {
+    "artifact": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.t9AQE3",
+    "reason": "Fixed300ms delay sampled asynchronous menustyle stylesheet publication under concurrent compositor load. Unchanged standalone rerun passed; final native test awaits actual writer promise, preserving color equality assertion.",
+    "standaloneControl": "/var/lib/hermes/.hermes/cache/scratch/openbar-menu-modern-root.KV3RaE"
+  }
+}

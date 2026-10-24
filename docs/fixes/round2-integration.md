@@ -11,9 +11,10 @@ No live desktop or host application/settings import was used.
   CSS provider; release on close, pre-realize destruction and partial initialization.
   [Plan, RED/GREEN and tests](round2-prefs.md).
 - **Import/export/reset:** real transaction completion with exception-safe pause
-  release, application holds during close, overlap rejection, validated exports
+  release, production-service close deferral, overlap rejection, validated exports
   without transient flags, local wallpaper URI preservation, prevalidated imports
-  in bounded batches. [Evidence and limits](round2-prefs.md).
+  in bounded batches. [Evidence](round2-prefs.md),
+  [actual service correction and policy](round2-prefs-service.md).
 - **Large-text preferences:** wrap/fill content, scroll actual native requisitions
   rather than clipping controls; keyboard focus scrolling enabled.
   [Native allocation coverage](round2-prefs.md).
@@ -91,8 +92,42 @@ and palette fast regressions, and baseline-relative whitespace checks passed.
 A scratch-copy extension bundle with all new source/schema/assets built
 successfully. Packaging is not installation or deployment.
 
-Independent-review conclusions and any correction reruns are recorded when
-complete; passing worker suites are not substituted for integrated verification.
+## Independent review
+
+Extension/panel/geometry/menu review: PASS; CSS/autotheme review: PASS, with
+nonblocking suggestions for more GTK4 collection/high-contrast coverage.
+
+Preferences review found a blocking mismatch in the initial lifetime test:
+`ExtensionPrefsDialog` is not attached to a GApplication. Production
+`ExtensionsService` releases its own hold on close and can shut down after its
+idle timeout; holding an artificial Adw.Application in a fixture does not prove
+real dialog survival. The earlier close-during-import pass therefore establishes
+only fixture-app behavior. The actual service/dialog regression failed before
+correction and now passes, including repeated close while a real child is still
+pending past the service idle timeout. The object-local close guard preserves
+existing handler state, restores settings and flushes before replaying one close.
+[Design, strict RED/GREEN and limits](round2-prefs-service.md).
+
+Final bounded independent review of that correction: PASS, no remaining concrete
+blockers. Independent native service/service-error runs each passed12 assertions.
+Parent replayed baseline9024ec3 and observed the expected real service shutdown
+with import-export=true (`openbar-prefs.5XA8eA`), then reran all five preference
+modes on GTK4.18.6/4.20.3/4.22.4: **15 runs,312 assertions PASS**.
+[Final production-host evidence](round2-prefs-final-results.json).
+
+After this last production correction, the complete Shell matrix was rerun:
+**24 suites each on49.4 and50.4,48 final runs PASS**.
+[Final readbacks](round2-final-results.json) supersede the earlier combined matrix.
+One intermediate49 root-menu test sampled pre-publication CSS after a fixed300ms;
+unchanged standalone rerun passed. It now awaits the actual writer completion
+before retaining the exact same final color-equality check. No production menu
+code changed for this fixture correction.
+
+Reviewer test setup temporarily appended a test export and compiled schemas in
+the staging source instead of the intended disposable copy. Those exact test
+artifacts were identified and restored; no legitimate fixes were removed. Final
+source checks must require no test export and unchanged tracked compiled schema.
+
 
 ## Explicit remaining limits
 
@@ -109,4 +144,7 @@ complete; passing worker suites are not substituted for integrated verification.
   suspend remain outside component/native-private-compositor evidence.
 - Older45–47 menu contracts are source-shaped tests, not native certification.
   Selected48/49/50 actor/preferences tests do not certify every optional feature.
+- Accepted settings operations defer user close until completion. A permanently
+  hung child can keep preferences open; process kill/Shell disappearance is not
+  crash recovery. See the explicit [service policy](round2-prefs-service.md).
 - Nothing pushed or deployed during this fix pass.

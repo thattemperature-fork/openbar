@@ -1,5 +1,16 @@
 # Open Bar fix tracking
 
+## Second audit follow-up
+
+Remaining mechanisms from the complete follow-up issue/PR audit are implemented
+with focused regressions. Fix map, source discussions/plans, independent reviews,
+final native matrix and retained limitations:
+[docs/fixes/round2-integration.md](docs/fixes/round2-integration.md).
+The actual preferences-service close-during-import blocker found during review
+is resolved and retested on GTK4.18/4.20/4.22. No additional push or deployment
+is included in this pass. The original execution record below is historical;
+the first batch was subsequently pushed on explicit request.
+
 ## Execution result
 
 Implemented and committed the 14 numbered fix areas, plus whole-menu root
